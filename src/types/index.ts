@@ -1,0 +1,173 @@
+export type ViewMode = 
+  | 'landing' 
+  | 'pos' 
+  | 'analytics' 
+  | 'customers'
+  | 'campaign';
+
+export type CustomerTier = 'Silver' | 'Gold' | 'Black VIP' | string;
+
+export interface ProductVariant {
+  id: string;
+  size: string;
+  color: string;
+  colorHex: string;
+  stock: number;
+  sku: string;
+}
+
+export interface Product {
+  id: string;
+  name: string;
+  category: 'Shirts' | 'Trousers' | 'Denim' | 'Jackets' | 'Knits';
+  price: number;
+  description: string;
+  image: string;
+  variants: ProductVariant[];
+  swatches: { name: string; hex: string }[];
+}
+
+export interface CartItem {
+  id: string;
+  product: Product;
+  variant: ProductVariant;
+  quantity: number;
+}
+
+export interface Invoice {
+  id: string;
+  date: string;
+  items: {
+    name: string;
+    variant: string;
+    qty: number;
+    price: number;
+  }[];
+  subtotal: number;
+  discount: number;
+  tax: number;
+  total: number;
+  coinsEarned: number;
+  coinsRedeemed: number;
+  whatsappStatus: 'Delivered' | 'Read' | 'Sent';
+}
+
+export interface Customer {
+  id: string;
+  name: string;
+  phone: string;
+  email: string;
+  tier: CustomerTier;
+  totalSpend: number;
+  coinsBalance: number;
+  preferredFit: string; // e.g. "Size L / 34"
+  preferredCategory: string;
+  joinedDate: string;
+  lastVisitDaysAgo: number;
+  orderHistory: Invoice[];
+}
+
+export interface DeadStockItem {
+  id: string;
+  sku: string;
+  name: string;
+  variant: string;
+  rackAgeDays: number;
+  unitsLeft: number;
+  pricePerUnit: number;
+  idleCapital: number;
+  targetCohort: string;
+}
+
+export interface CustomTierConfig {
+  id: string;
+  name: string;
+  minSpend: number;
+  cashbackPercentage: number;
+  colorGradient: string; // e.g. 'from-slate-900 via-slate-800 to-black'
+  badgeStyle: string; // e.g. 'bg-amber-400 text-slate-950'
+  perks: string[];
+}
+
+export interface PassThemeConfig {
+  cardGradient: string; // 'gold-noir' | 'tangerine-velvet' | 'emerald-luxe' | 'midnight-sapphire' | 'rose-gold'
+  patternStyle: 'woven' | 'monogram' | 'geometric';
+  cardTitle: string;
+  accentColor: string;
+}
+
+export interface RedemptionConfig {
+  maxRedeemPercentagePerBill: number; // e.g. 50%
+  minCoinsThreshold: number; // e.g. 100
+  coinsEarnMultiplier: number; // e.g. 1
+}
+
+export interface LoyaltyRules {
+  cashbackPercentage: number; // default global fallback %
+  pointExpiryDays: number; // e.g., 90
+  silverThreshold: number; // ₹0
+  goldThreshold: number; // ₹25,000
+  blackVipThreshold: number; // ₹75,000
+  pointsPerRupee: number; // 1 point = ₹1
+  tiers: CustomTierConfig[];
+  passTheme: PassThemeConfig;
+  redemptionConfig: RedemptionConfig;
+  welcomeMessageTemplate: string;
+}
+
+export interface CustomCohortFilter {
+  sizeFilter?: string;
+  idleDaysMin?: number;
+  tierFilter?: string;
+  categoryFilter?: string;
+  minSpend?: number;
+}
+
+export interface CtaButton {
+  id: string;
+  label: string;
+  type: 'reply' | 'url';
+  value: string;
+}
+
+export interface CampaignTemplate {
+  headerType: 'text' | 'image';
+  headerImageUrl?: string;
+  bodyText: string;
+  ctaButtons: CtaButton[];
+  couponCode?: string;
+  discountValue?: string;
+}
+
+export interface CampaignCohort {
+  id: string;
+  name: string;
+  description: string;
+  estimatedReach: number;
+  recommendedTemplate: string;
+  customFilter?: CustomCohortFilter;
+  templateConfig?: CampaignTemplate;
+}
+
+export interface BroadcastLog {
+  id: string;
+  date: string;
+  cohortName: string;
+  reachCount: number;
+  openRate: string;
+  templateUsed: string;
+  status: 'Delivered' | 'Scheduled';
+  revenueAttributed: number;
+}
+
+export interface StoreSettings {
+  storeLegalName: string;
+  brandName: string;
+  gstin: string;
+  address: string;
+  city: string;
+  phone: string;
+  metaApiStatus: 'Live & Verified' | 'Pending' | 'Disconnected';
+  receiptFooterNote: string;
+  autoSendWhatsapp: boolean;
+}

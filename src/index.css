@@ -1,0 +1,168 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:is(.dark *));
+
+:root {
+  --background: rgb(232, 235, 237);
+  --foreground: rgb(51, 51, 51);
+  --card: rgb(255, 255, 255);
+  --card-foreground: rgb(51, 51, 51);
+  --popover: rgb(255, 255, 255);
+  --popover-foreground: rgb(51, 51, 51);
+  --primary: rgb(224, 93, 56);
+  --primary-foreground: rgb(255, 255, 255);
+  --secondary: rgb(243, 244, 246);
+  --secondary-foreground: rgb(75, 85, 99);
+  --muted: rgb(249, 250, 251);
+  --muted-foreground: rgb(107, 114, 128);
+  --accent: rgb(214, 228, 240);
+  --accent-foreground: rgb(30, 58, 138);
+  --destructive: rgb(239, 68, 68);
+  --destructive-foreground: rgb(255, 255, 255);
+  --border: rgb(220, 223, 226);
+  --input: rgb(244, 245, 247);
+  --ring: rgb(224, 93, 56);
+  --font-sans: 'Inter', sans-serif;
+  --font-serif: 'Source Serif 4', serif;
+  --font-mono: 'JetBrains Mono', monospace;
+  --radius: 0.75rem;
+  color-scheme: light;
+}
+
+html.dark, :root.dark, .dark {
+  --background: rgb(18, 20, 24);
+  --foreground: rgb(240, 242, 245);
+  --card: rgb(28, 31, 38);
+  --card-foreground: rgb(240, 242, 245);
+  --popover: rgb(28, 31, 38);
+  --popover-foreground: rgb(240, 242, 245);
+  --primary: rgb(224, 93, 56);
+  --primary-foreground: rgb(255, 255, 255);
+  --secondary: rgb(36, 40, 50);
+  --secondary-foreground: rgb(200, 205, 215);
+  --muted: rgb(22, 25, 32);
+  --muted-foreground: rgb(140, 148, 162);
+  --accent: rgb(34, 48, 74);
+  --accent-foreground: rgb(180, 210, 245);
+  --destructive: rgb(239, 68, 68);
+  --destructive-foreground: rgb(255, 255, 255);
+  --border: rgb(45, 50, 62);
+  --input: rgb(36, 40, 50);
+  --ring: rgb(224, 93, 56);
+  color-scheme: dark;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --font-sans: var(--font-sans);
+  --font-mono: var(--font-mono);
+  --font-serif: var(--font-serif);
+  --radius: var(--radius);
+}
+
+body {
+  font-family: var(--font-sans);
+  background-color: var(--background);
+  color: var(--foreground);
+  margin: 0;
+  padding: 0;
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+/* Custom scrollbar styling for high-end boutique look */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.03);
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.15);
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(224, 93, 56, 0.5);
+}
+
+/* Custom pulse animation for status badges */
+@keyframes livePulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.4; transform: scale(1.15); }
+}
+
+.animate-pulse-live {
+  animation: livePulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+
+.box-hover-zoom {
+  transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.35s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.3s ease;
+}
+
+.box-hover-zoom:hover {
+  transform: translateY(-4px) scale(1.018);
+  box-shadow: 
+    0 24px 50px -10px rgba(0, 0, 0, 0.18),
+    0 10px 24px -4px rgba(0, 0, 0, 0.1);
+}
+
+.dark .box-hover-zoom:hover {
+  transform: translateY(-4px) scale(1.018);
+  box-shadow: 
+    0 28px 60px -10px rgba(0, 0, 0, 0.8),
+    0 12px 28px -4px rgba(0, 0, 0, 0.6);
+}
+
+/* Custom scrollbar styling for high-end boutique look */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.03);
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.15);
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(224, 93, 56, 0.5);
+}
+
+/* Custom pulse animation for status badges */
+@keyframes livePulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.4; transform: scale(1.15); }
+}
+
+.animate-pulse-live {
+  animation: livePulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
