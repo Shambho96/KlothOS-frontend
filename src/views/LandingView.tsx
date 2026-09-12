@@ -1,13 +1,14 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { KlothOSLogo } from '../components/KlothOSLogo';
+import { Gsap3DCanvas } from '../components/landing/Gsap3DCanvas';
+import { Gsap3DTiltCard } from '../components/landing/Gsap3DTiltCard';
+import { SaaSExplainerVideo } from '../components/landing/SaaSExplainerVideo';
 import { motion, AnimatePresence } from 'framer-motion';
+import gsap from 'gsap';
 import { 
   Sparkles, 
   MessageSquare, 
   ArrowRight, 
-  Smartphone, 
-  Flame, 
-  ChevronRight, 
   Lock, 
   X, 
   Sun, 
@@ -18,7 +19,11 @@ import {
   Calculator, 
   CheckCircle2, 
   Send,
-  Star
+  Play,
+  TrendingUp,
+  Layers,
+  Award,
+  Tv
 } from 'lucide-react';
 
 interface LandingViewProps {
@@ -55,19 +60,20 @@ export const LandingView: React.FC<LandingViewProps> = ({
   // Interactive POS Simulator State
   const [simSelectedItem, setSimSelectedItem] = useState(SIMULATOR_ITEMS[0]);
   const [simSelectedCustomer, setSimSelectedCustomer] = useState(SIMULATOR_CUSTOMERS[0]);
-  const [simStep, setSimStep] = useState<1 | 2 | 3>(1);
   const [simBillSent, setSimBillSent] = useState<boolean>(false);
 
   // Interactive ROI Calculator State
   const [calcBillsPerMonth, setCalcBillsPerMonth] = useState<number>(1200);
   const [calcDeadStockValue, setCalcDeadStockValue] = useState<number>(350000);
 
-  // Feature Showcase Active Tab
-  const [activeFeatureTab, setActiveFeatureTab] = useState<'matrix' | 'whatsapp' | 'deadstock'>('matrix');
+  // Hero refs for GSAP entrance
+  const heroHeadingRef = useRef<HTMLHeadingElement>(null);
+  const heroBadgeRef = useRef<HTMLDivElement>(null);
+  const heroButtonsRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const handleScroll = () => {
-      if (window.scrollY > 400) {
+      if (window.scrollY > 450) {
         setShowStickyCta(true);
       } else {
         setShowStickyCta(false);
@@ -77,9 +83,27 @@ export const LandingView: React.FC<LandingViewProps> = ({
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  // GSAP Entrance Animation
+  useEffect(() => {
+    const ctx = gsap.context(() => {
+      const tl = gsap.timeline();
+      tl.from(heroBadgeRef.current, { y: -20, opacity: 0, duration: 0.6, ease: 'back.out(1.7)' })
+        .from(heroHeadingRef.current, { y: 30, opacity: 0, duration: 0.8, ease: 'power3.out' }, '-=0.3')
+        .from(heroButtonsRef.current, { y: 20, opacity: 0, duration: 0.6, ease: 'power2.out' }, '-=0.4');
+    });
+    return () => ctx.revert();
+  }, []);
+
   const handleLoginSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     onLogin();
+  };
+
+  const scrollToDemo = () => {
+    const el = document.getElementById('saas-video-section');
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth' });
+    }
   };
 
   // ROI Calculations
@@ -91,504 +115,431 @@ export const LandingView: React.FC<LandingViewProps> = ({
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col font-sans selection:bg-primary selection:text-primary-foreground relative overflow-x-hidden">
       
+      {/* 3D GSAP PARTICLES CANVAS BACKGROUND */}
+      <Gsap3DCanvas className="opacity-40 dark:opacity-60" />
+
       {/* AMBIENT BACKGROUND GLOW BLOBS */}
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-7xl h-[600px] pointer-events-none overflow-hidden -z-10 opacity-60 dark:opacity-40">
-        <div className="absolute -top-32 left-1/4 w-[500px] h-[500px] bg-primary/20 rounded-full blur-[140px] animate-pulse" />
-        <div className="absolute top-48 right-1/4 w-[450px] h-[450px] bg-amber-500/15 rounded-full blur-[160px]" />
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-7xl h-[700px] pointer-events-none overflow-hidden -z-10 opacity-70 dark:opacity-40">
+        <div className="absolute -top-32 left-1/4 w-[600px] h-[600px] bg-primary/25 rounded-full blur-[150px] animate-pulse" />
+        <div className="absolute top-48 right-1/4 w-[500px] h-[500px] bg-teal-500/20 rounded-full blur-[170px]" />
       </div>
 
       {/* PUBLIC NAVBAR */}
-      <header className="h-20 px-6 sm:px-12 border-b border-border/80 bg-card/80 backdrop-blur-xl sticky top-0 z-40 flex items-center justify-between transition-colors">
-        <div className="flex items-center gap-3">
-          <KlothOSLogo size={38} />
-          <span className="font-extrabold text-xl tracking-tight text-foreground">
-            KlothOS
-          </span>
+      <nav className="sticky top-0 z-40 backdrop-blur-xl bg-background/80 border-b border-border/60 transition-colors">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+          
+          <div className="flex items-center gap-3">
+            <KlothOSLogo size={40} />
+          </div>
+
+          <div className="hidden md:flex items-center gap-8 text-sm font-medium text-muted-foreground">
+            <a href="#saas-video-section" className="hover:text-foreground transition-colors">Architecture</a>
+            <a href="#features" className="hover:text-foreground transition-colors">Features</a>
+            <a href="#simulator" className="hover:text-foreground transition-colors">Interactive POS</a>
+            <a href="#roi-calculator" className="hover:text-foreground transition-colors">ROI Calculator</a>
+            <a href="#testimonials" className="hover:text-foreground transition-colors">Enterprise</a>
+          </div>
+
+          <div className="flex items-center gap-3">
+            <button
+              onClick={onToggleDarkMode}
+              className="p-2.5 rounded-xl border border-border/80 bg-card hover:bg-muted text-muted-foreground hover:text-foreground transition-colors"
+              title="Toggle Theme"
+            >
+              {isDarkMode ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+            </button>
+
+            <button
+              onClick={() => setShowLoginModal(true)}
+              className="px-5 py-2.5 rounded-xl bg-primary text-primary-foreground font-semibold text-sm hover:opacity-90 transition-all shadow-lg shadow-primary/20 flex items-center gap-2"
+            >
+              <Lock className="w-4 h-4" />
+              <span>Login to Store</span>
+            </button>
+          </div>
+        </div>
+      </nav>
+
+      {/* HERO SECTION */}
+      <header className="relative pt-16 pb-20 md:pt-24 md:pb-28 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto w-full text-center flex flex-col items-center">
+        
+        {/* HERO BADGE */}
+        <div ref={heroBadgeRef} className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-primary/30 bg-primary/10 text-primary text-xs font-semibold uppercase tracking-wider mb-6 backdrop-blur-md shadow-sm">
+          <Sparkles className="w-4 h-4 text-primary animate-spin" />
+          <span>Next-Generation Apparel Retail Operating System</span>
         </div>
 
-        {/* Center Nav Links */}
-        <nav className="hidden md:flex items-center gap-8 text-xs font-bold text-muted-foreground">
-          <a href="#simulator" className="hover:text-foreground transition-colors">Live Simulator</a>
-          <a href="#features" className="hover:text-foreground transition-colors">Features</a>
-          <a href="#calculator" className="hover:text-foreground transition-colors">ROI Calculator</a>
-          <a href="#comparison" className="hover:text-foreground transition-colors">Comparison</a>
-        </nav>
+        {/* HERO MAIN HEADING */}
+        <h1 ref={heroHeadingRef} className="text-4xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight max-w-5xl leading-[1.1] text-foreground mb-6">
+          The Operating System Built for <br className="hidden sm:inline" />
+          <span className="bg-gradient-to-r from-primary via-amber-500 to-teal-600 bg-clip-text text-transparent">
+            Multi-Billion Dollar Fashion Brands
+          </span>
+        </h1>
 
-        {/* Right Auth Buttons & Theme Toggle */}
-        <div className="flex items-center gap-3">
-          <button
-            onClick={onToggleDarkMode}
-            className="p-2.5 rounded-xl bg-secondary/80 hover:bg-muted text-foreground border border-border transition-all flex items-center gap-1.5 text-xs font-semibold cursor-pointer shadow-xs"
-            title={isDarkMode ? "Switch to Light Mode" : "Switch to Dark Mode"}
-          >
-            {isDarkMode ? (
-              <>
-                <Sun size={15} className="text-amber-400" />
-                <span className="hidden sm:inline">Light</span>
-              </>
-            ) : (
-              <>
-                <Moon size={15} className="text-primary" />
-                <span className="hidden sm:inline">Dark</span>
-              </>
-            )}
-          </button>
+        {/* HERO SUBTEXT */}
+        <p className="text-lg sm:text-xl text-muted-foreground max-w-3xl mb-10 leading-relaxed font-normal">
+          Unify offline POS billing, paperless WhatsApp invoices, size-level deadstock liquidation, and automated VIP retention into one seamless cloud SaaS platform.
+        </p>
 
+        {/* HERO CALL TO ACTION BUTTONS */}
+        <div ref={heroButtonsRef} className="flex flex-col sm:flex-row items-center gap-4 w-full sm:w-auto mb-16">
           <button
             onClick={() => setShowLoginModal(true)}
-            className="px-4 py-2.5 text-xs font-bold text-foreground hover:bg-secondary rounded-xl border border-border transition-all cursor-pointer"
+            className="w-full sm:w-auto px-8 py-4 rounded-2xl bg-primary text-primary-foreground font-bold text-base hover:opacity-95 transition-all shadow-xl shadow-primary/30 flex items-center justify-center gap-3 group"
           >
-            Sign In
+            <span>Launch Live Demo Store</span>
+            <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
           </button>
 
           <button
-            onClick={onLogin}
-            className="px-5 py-2.5 bg-primary text-primary-foreground font-extrabold text-xs rounded-xl shadow-md hover:shadow-primary/30 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center gap-2 cursor-pointer"
+            onClick={scrollToDemo}
+            className="w-full sm:w-auto px-8 py-4 rounded-2xl bg-card border border-border/80 font-semibold text-base hover:bg-muted transition-all flex items-center justify-center gap-3"
           >
-            <Flame size={15} /> Launch POS &rarr;
+            <Play className="w-4 h-4 text-primary fill-primary" />
+            <span>Watch Product Video</span>
           </button>
         </div>
+
+        {/* 3D HERO FLOATING METRIC CARDS */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 w-full max-w-4xl text-left">
+          
+          <Gsap3DTiltCard glowColor="rgba(216, 121, 67, 0.2)">
+            <div className="p-6 rounded-2xl border border-border/80 bg-card/80 backdrop-blur-xl shadow-xl space-y-2">
+              <div className="flex items-center justify-between text-muted-foreground text-xs font-mono">
+                <span>SPEED METRIC</span>
+                <Zap className="w-4 h-4 text-amber-500" />
+              </div>
+              <div className="text-3xl font-extrabold text-foreground font-mono">&lt; 0.8s</div>
+              <p className="text-xs text-muted-foreground">Average checkout & billing processing time per customer</p>
+            </div>
+          </Gsap3DTiltCard>
+
+          <Gsap3DTiltCard glowColor="rgba(82, 117, 117, 0.2)">
+            <div className="p-6 rounded-2xl border border-border/80 bg-card/80 backdrop-blur-xl shadow-xl space-y-2">
+              <div className="flex items-center justify-between text-muted-foreground text-xs font-mono">
+                <span>PAPERLESS SAVINGS</span>
+                <MessageSquare className="w-4 h-4 text-emerald-500" />
+              </div>
+              <div className="text-3xl font-extrabold text-foreground font-mono">₹1.2L+</div>
+              <p className="text-xs text-muted-foreground">Annual paper bill savings per store via WhatsApp dispatch</p>
+            </div>
+          </Gsap3DTiltCard>
+
+          <Gsap3DTiltCard glowColor="rgba(231, 138, 83, 0.2)">
+            <div className="p-6 rounded-2xl border border-border/80 bg-card/80 backdrop-blur-xl shadow-xl space-y-2">
+              <div className="flex items-center justify-between text-muted-foreground text-xs font-mono">
+                <span>INVENTORY RECOVERY</span>
+                <TrendingUp className="w-4 h-4 text-primary" />
+              </div>
+              <div className="text-3xl font-extrabold text-foreground font-mono">45% Lift</div>
+              <p className="text-xs text-muted-foreground">Deadstock capital liquidation with AI Size Matrix targeting</p>
+            </div>
+          </Gsap3DTiltCard>
+
+        </div>
+
       </header>
 
-      {/* BODY CONTENT CONTAINER */}
-      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-8 py-12 space-y-24">
-        
-        {/* HERO SECTION */}
-        <section className="relative overflow-hidden rounded-3xl bg-card/60 backdrop-blur-xl border border-border/80 p-8 sm:p-14 shadow-xl">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
-            
-            {/* Left Copy & Actions */}
-            <div className="lg:col-span-7 space-y-6">
-              <motion.div 
-                initial={{ opacity: 0, y: 15 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5 }}
-                className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/10 border border-primary/20 text-primary text-xs font-extrabold tracking-wide uppercase shadow-xs"
-              >
-                <Sparkles size={14} /> Zero Barcode Scanners Needed &bull; Built for Apparel Boutiques
-              </motion.div>
+      {/* ANIMATED PRODUCT EXPLAINER VIDEO SECTION */}
+      <section id="saas-video-section" className="py-12 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto w-full text-center">
+        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-semibold uppercase tracking-wider mb-4">
+          <Tv className="w-3.5 h-3.5" /> What Is KlothOS SaaS?
+        </div>
+        <h2 className="text-3xl sm:text-5xl font-extrabold tracking-tight text-foreground mb-4">
+          See the Complete SaaS Architecture in Action
+        </h2>
+        <p className="text-muted-foreground max-w-2xl mx-auto text-sm sm:text-base mb-8">
+          Interactive step-by-step product walkthrough demonstrating how KlothOS connects store counters, WhatsApp messaging, and AI deadstock analytics.
+        </p>
 
-              <motion.h1 
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: 0.1 }}
-                className="text-4xl sm:text-6xl font-black text-foreground tracking-tight leading-[1.08]"
-              >
-                Bill Clothes in 3 Taps.{' '}
-                <span className="bg-gradient-to-r from-primary via-amber-500 to-primary bg-clip-text text-transparent underline decoration-primary/30 decoration-wavy">
-                  Retain Walk-ins on WhatsApp.
-                </span>
-              </motion.h1>
+        {/* INTERACTIVE VIDEO COMPONENT */}
+        <SaaSExplainerVideo />
+      </section>
 
-              <motion.p 
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: 0.2 }}
-                className="text-base sm:text-lg text-muted-foreground font-normal leading-relaxed max-w-2xl"
-              >
-                KlothOS replaces legacy barcode scanners with a lightning-fast garment touch matrix. Automate paperless WhatsApp invoicing, customer loyalty, and targeted dead-stock clearance in one seamless operating system.
-              </motion.p>
-
-              <motion.div 
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: 0.3 }}
-                className="flex flex-wrap items-center gap-4 pt-2"
-              >
-                <button
-                  onClick={onLogin}
-                  className="px-8 py-4 bg-primary text-primary-foreground font-black text-sm rounded-2xl shadow-xl hover:shadow-primary/30 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center gap-3 cursor-pointer"
-                >
-                  <Flame size={20} /> Launch Fast Billing <ArrowRight size={18} />
-                </button>
-
-                <a
-                  href="#simulator"
-                  className="px-6 py-4 bg-secondary text-secondary-foreground hover:text-foreground font-bold text-sm rounded-2xl border border-border hover:bg-muted transition-all flex items-center gap-2 cursor-pointer"
-                >
-                  <Smartphone size={18} className="text-primary" /> Try Interactive Simulator
-                </a>
-              </motion.div>
-
-              {/* Stat Highlights Pill */}
-              <motion.div 
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: 0.4 }}
-                className="pt-6 grid grid-cols-3 gap-6 border-t border-border/60 text-xs"
-              >
-                <div>
-                  <p className="font-mono text-2xl font-black text-foreground">3 Taps</p>
-                  <p className="text-muted-foreground font-medium">Average checkout speed</p>
-                </div>
-                <div>
-                  <p className="font-mono text-2xl font-black text-primary">97.4%</p>
-                  <p className="text-muted-foreground font-medium">WhatsApp receipt open rate</p>
-                </div>
-                <div>
-                  <p className="font-mono text-2xl font-black text-foreground">4.2x</p>
-                  <p className="text-muted-foreground font-medium">Customer repeat visits</p>
-                </div>
-              </motion.div>
-            </div>
-
-            {/* Right Live App Mock Card Frame */}
-            <motion.div 
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.7, delay: 0.2 }}
-              className="lg:col-span-5 relative"
-            >
-              <div className="relative rounded-2xl bg-card border border-border/80 shadow-2xl p-5 overflow-hidden">
-                {/* Header bar of mock frame */}
-                <div className="flex items-center justify-between border-b border-border pb-3 mb-4 text-xs font-semibold">
-                  <div className="flex items-center gap-2">
-                    <span className="w-3 h-3 rounded-full bg-destructive/80 inline-block" />
-                    <span className="w-3 h-3 rounded-full bg-amber-400 inline-block" />
-                    <span className="w-3 h-3 rounded-full bg-emerald-500 inline-block" />
-                    <span className="ml-2 font-mono text-[11px] text-muted-foreground">pos.klothos.app</span>
-                  </div>
-                  <span className="flex items-center gap-1.5 text-[11px] text-emerald-600 bg-emerald-500/10 px-2 py-0.5 rounded-full font-bold">
-                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-ping" /> Live Register #01
-                  </span>
-                </div>
-
-                {/* Mock POS Garment Grid Preview */}
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between text-xs">
-                    <span className="font-bold text-foreground flex items-center gap-1.5">
-                      <ShoppingBag size={14} className="text-primary" /> Fast Touch Matrix
-                    </span>
-                    <span className="text-[10px] text-muted-foreground">Category: Shirts</span>
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-2.5">
-                    {SIMULATOR_ITEMS.slice(0, 2).map((item) => (
-                      <div key={item.id} className="p-3 rounded-xl bg-secondary/60 border border-border/60 text-xs space-y-1">
-                        <div className="flex justify-between items-start">
-                          <span className="font-bold text-foreground truncate">{item.name}</span>
-                        </div>
-                        <span className="text-[10px] text-muted-foreground">{item.size} &bull; {item.color}</span>
-                        <div className="flex justify-between items-center pt-1">
-                          <span className="font-bold font-mono text-primary">₹{item.price}</span>
-                          <span className="text-[9px] bg-primary/10 text-primary font-bold px-1.5 py-0.5 rounded">+ Add</span>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-
-                  {/* Simulated Receipt Preview Pill */}
-                  <div className="p-3 rounded-xl bg-primary/10 border border-primary/20 text-xs space-y-1.5">
-                    <div className="flex items-center justify-between font-bold text-primary text-[11px]">
-                      <span className="flex items-center gap-1">
-                        <MessageSquare size={14} /> Instant WhatsApp Bill
-                      </span>
-                      <span className="font-mono text-emerald-600">DELIVERED</span>
-                    </div>
-                    <p className="text-[11px] text-muted-foreground">
-                      Invoice #INV-8842 sent to Rohan S. (+91 98201 44820) with 172 Loyalty Coins credited.
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              {/* Floating Badge overlay */}
-              <motion.div 
-                animate={{ y: [0, -6, 0] }}
-                transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
-                className="absolute -bottom-5 -left-5 bg-card/90 backdrop-blur-md border border-border p-3.5 rounded-2xl shadow-xl flex items-center gap-3 text-xs z-20 hidden sm:flex"
-              >
-                <div className="w-8 h-8 rounded-xl bg-emerald-500/20 text-emerald-600 flex items-center justify-center font-bold">
-                  <Zap size={18} />
-                </div>
-                <div>
-                  <p className="font-bold text-foreground">2.1 Seconds Checkout</p>
-                  <p className="text-[10px] text-muted-foreground">Zero manual barcode typing</p>
-                </div>
-              </motion.div>
-            </motion.div>
+      {/* GSAP 3D FEATURE SHOWCASE MATRIX */}
+      <section id="features" className="py-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto w-full">
+        <div className="text-center mb-16 space-y-4">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-secondary/20 text-secondary-foreground text-xs font-semibold uppercase tracking-wider">
+            <Layers className="w-3.5 h-3.5" /> Core Product Pillars
           </div>
-        </section>
+          <h2 className="text-3xl sm:text-5xl font-extrabold tracking-tight text-foreground">
+            Engineered for High-Volume Apparel Retail
+          </h2>
+          <p className="text-muted-foreground max-w-2xl mx-auto text-sm sm:text-base">
+            Every tool is designed specifically for fashion stores—eliminating friction at checkout while driving repeat customer revenue.
+          </p>
+        </div>
 
-        {/* SECTION: INTERACTIVE 3-STEP POS & WHATSAPP SIMULATOR */}
-        <section id="simulator" className="scroll-mt-28 space-y-8">
-          <div className="text-center max-w-2xl mx-auto space-y-3">
-            <span className="text-xs font-black uppercase tracking-widest text-primary bg-primary/10 px-3.5 py-1 rounded-full border border-primary/20">
-              Interactive Test Drive
-            </span>
-            <h2 className="text-3xl sm:text-4xl font-extrabold text-foreground tracking-tight">
-              Experience KlothOS Right Now
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          
+          <Gsap3DTiltCard maxRotation={15}>
+            <div className="h-full p-8 rounded-3xl border border-border/80 bg-card hover:border-primary/50 transition-all shadow-lg flex flex-col justify-between space-y-6">
+              <div>
+                <div className="w-12 h-12 rounded-2xl bg-primary/10 text-primary flex items-center justify-center mb-6">
+                  <Zap className="w-6 h-6" />
+                </div>
+                <h3 className="text-xl font-bold text-foreground mb-2">0.8s Ultra POS</h3>
+                <p className="text-sm text-muted-foreground leading-relaxed">
+                  Blazing fast billing interface built for high-footfall apparel stores. Scan tags, auto-apply discounts, and process payments without delays.
+                </p>
+              </div>
+              <ul className="text-xs text-muted-foreground space-y-2 border-t border-border/60 pt-4">
+                <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-primary" /> Offline store sync</li>
+                <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-primary" /> Multi-counter support</li>
+              </ul>
+            </div>
+          </Gsap3DTiltCard>
+
+          <Gsap3DTiltCard maxRotation={15}>
+            <div className="h-full p-8 rounded-3xl border border-border/80 bg-card hover:border-emerald-500/50 transition-all shadow-lg flex flex-col justify-between space-y-6">
+              <div>
+                <div className="w-12 h-12 rounded-2xl bg-emerald-500/10 text-emerald-600 flex items-center justify-center mb-6">
+                  <MessageSquare className="w-6 h-6" />
+                </div>
+                <h3 className="text-xl font-bold text-foreground mb-2">WhatsApp Receipts</h3>
+                <p className="text-sm text-muted-foreground leading-relaxed">
+                  Send digital PDF bills directly to customer WhatsApp. Zero paper cost, 98% open rates, and instant loyalty coin updates.
+                </p>
+              </div>
+              <ul className="text-xs text-muted-foreground space-y-2 border-t border-border/60 pt-4">
+                <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-emerald-500" /> Official Business API</li>
+                <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-emerald-500" /> Single-click PDF download</li>
+              </ul>
+            </div>
+          </Gsap3DTiltCard>
+
+          <Gsap3DTiltCard maxRotation={15}>
+            <div className="h-full p-8 rounded-3xl border border-border/80 bg-card hover:border-blue-500/50 transition-all shadow-lg flex flex-col justify-between space-y-6">
+              <div>
+                <div className="w-12 h-12 rounded-2xl bg-blue-500/10 text-blue-600 flex items-center justify-center mb-6">
+                  <BarChart3 className="w-6 h-6" />
+                </div>
+                <h3 className="text-xl font-bold text-foreground mb-2">AI Deadstock Radar</h3>
+                <p className="text-sm text-muted-foreground leading-relaxed">
+                  Matrix analysis pinpoints non-moving size variants (e.g. Size 38 Trousers sitting &gt; 45 days) and automates targeted clearance campaigns.
+                </p>
+              </div>
+              <ul className="text-xs text-muted-foreground space-y-2 border-t border-border/60 pt-4">
+                <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-blue-500" /> Automated cash recovery</li>
+                <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-blue-500" /> Size breakdown heatmaps</li>
+              </ul>
+            </div>
+          </Gsap3DTiltCard>
+
+          <Gsap3DTiltCard maxRotation={15}>
+            <div className="h-full p-8 rounded-3xl border border-border/80 bg-card hover:border-purple-500/50 transition-all shadow-lg flex flex-col justify-between space-y-6">
+              <div>
+                <div className="w-12 h-12 rounded-2xl bg-purple-500/10 text-purple-600 flex items-center justify-center mb-6">
+                  <Award className="w-6 h-6" />
+                </div>
+                <h3 className="text-xl font-bold text-foreground mb-2">Automated VIP Loyalty</h3>
+                <p className="text-sm text-muted-foreground leading-relaxed">
+                  Reward shoppers with coin points (Silver, Gold, Black VIP). Trigger birthday discounts and exclusive catalog drops on WhatsApp.
+                </p>
+              </div>
+              <ul className="text-xs text-muted-foreground space-y-2 border-t border-border/60 pt-4">
+                <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-purple-500" /> Tiered membership rules</li>
+                <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-purple-500" /> LTV tracking dashboard</li>
+              </ul>
+            </div>
+          </Gsap3DTiltCard>
+
+        </div>
+      </section>
+
+      {/* HANDS-ON INTERACTIVE POS SIMULATOR WIDGET */}
+      <section id="simulator" className="py-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto w-full">
+        <div className="rounded-3xl border border-border/80 bg-card/90 backdrop-blur-xl shadow-2xl p-6 sm:p-12">
+          
+          <div className="text-center max-w-3xl mx-auto mb-10 space-y-3">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/10 text-amber-600 text-xs font-semibold uppercase tracking-wider">
+              <ShoppingBag className="w-3.5 h-3.5" /> Hands-On Interactive Simulator
+            </div>
+            <h2 className="text-3xl sm:text-4xl font-extrabold text-foreground">
+              Experience the KlothOS Checkout Flow
             </h2>
             <p className="text-sm text-muted-foreground">
-              Try the 3-step billing process below and watch the simulated WhatsApp paperless invoice get generated live!
+              Select an apparel item and customer below to see how KlothOS instantly calculates totals, applies VIP rewards, and dispatches a WhatsApp bill.
             </p>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start bg-card/40 backdrop-blur-xl border border-border/80 rounded-3xl p-6 sm:p-10 shadow-lg">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
             
-            {/* Left Steps Controls */}
+            {/* ITEM & CUSTOMER SELECTOR PANEL */}
             <div className="lg:col-span-7 space-y-6">
               
-              {/* Step Indicators */}
-              <div className="flex items-center justify-between gap-2 border-b border-border pb-4">
-                <button
-                  onClick={() => setSimStep(1)}
-                  className={`flex items-center gap-2 text-xs font-bold px-3.5 py-2 rounded-xl transition-all cursor-pointer ${
-                    simStep === 1 ? 'bg-primary text-primary-foreground shadow-xs' : 'bg-secondary/60 text-muted-foreground'
-                  }`}
-                >
-                  <span className="w-5 h-5 rounded-full bg-primary-foreground/20 text-primary-foreground flex items-center justify-center text-[10px]">1</span>
-                  Select Item
-                </button>
-                <ChevronRight size={16} className="text-muted-foreground shrink-0" />
-                <button
-                  onClick={() => setSimStep(2)}
-                  className={`flex items-center gap-2 text-xs font-bold px-3.5 py-2 rounded-xl transition-all cursor-pointer ${
-                    simStep === 2 ? 'bg-primary text-primary-foreground shadow-xs' : 'bg-secondary/60 text-muted-foreground'
-                  }`}
-                >
-                  <span className="w-5 h-5 rounded-full bg-primary-foreground/20 text-primary-foreground flex items-center justify-center text-[10px]">2</span>
-                  Select Customer
-                </button>
-                <ChevronRight size={16} className="text-muted-foreground shrink-0" />
-                <button
-                  onClick={() => setSimStep(3)}
-                  className={`flex items-center gap-2 text-xs font-bold px-3.5 py-2 rounded-xl transition-all cursor-pointer ${
-                    simStep === 3 ? 'bg-primary text-primary-foreground shadow-xs' : 'bg-secondary/60 text-muted-foreground'
-                  }`}
-                >
-                  <span className="w-5 h-5 rounded-full bg-primary-foreground/20 text-primary-foreground flex items-center justify-center text-[10px]">3</span>
-                  Send Bill
-                </button>
-              </div>
-
-              {/* Step 1: Garment Matrix Selector */}
-              {simStep === 1 && (
-                <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-4">
-                  <h3 className="text-sm font-bold text-foreground">Step 1: Tap a Garment to Add to Cart</h3>
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                    {SIMULATOR_ITEMS.map((item) => {
-                      const isSelected = simSelectedItem.id === item.id;
-                      return (
-                        <button
-                          key={item.id}
-                          onClick={() => setSimSelectedItem(item)}
-                          className={`p-4 rounded-2xl border text-left transition-all cursor-pointer ${
-                            isSelected 
-                              ? 'bg-primary/10 border-primary ring-2 ring-primary/30' 
-                              : 'bg-card border-border hover:bg-secondary/60'
-                          }`}
-                        >
-                          <div className="flex justify-between items-start mb-2">
-                            <span className="text-[10px] font-extrabold uppercase px-2 py-0.5 rounded bg-primary/20 text-primary">
-                              {item.tag}
-                            </span>
-                            {isSelected && <CheckCircle2 size={16} className="text-primary" />}
-                          </div>
-                          <p className="font-bold text-xs text-foreground">{item.name}</p>
-                          <p className="text-[11px] text-muted-foreground">{item.size} &bull; {item.color}</p>
-                          <p className="font-mono text-xs font-bold text-primary pt-2">₹{item.price}</p>
-                        </button>
-                      );
-                    })}
-                  </div>
-                  <div className="flex justify-end pt-2">
+              {/* STEP 1: SELECT ITEM */}
+              <div>
+                <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider block mb-3">
+                  Step 1: Select Item to Scan
+                </label>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  {SIMULATOR_ITEMS.map((item) => (
                     <button
-                      onClick={() => setSimStep(2)}
-                      className="px-6 py-2.5 bg-primary text-primary-foreground text-xs font-bold rounded-xl flex items-center gap-2 hover:opacity-90 transition-all cursor-pointer"
-                    >
-                      Next: Choose Customer &rarr;
-                    </button>
-                  </div>
-                </motion.div>
-              )}
-
-              {/* Step 2: Customer Selector */}
-              {simStep === 2 && (
-                <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-4">
-                  <h3 className="text-sm font-bold text-foreground">Step 2: Select Walk-In Customer</h3>
-                  <div className="space-y-2.5">
-                    {SIMULATOR_CUSTOMERS.map((cust) => {
-                      const isSelected = simSelectedCustomer.id === cust.id;
-                      return (
-                        <button
-                          key={cust.id}
-                          onClick={() => setSimSelectedCustomer(cust)}
-                          className={`w-full p-3.5 rounded-2xl border flex items-center justify-between transition-all cursor-pointer ${
-                            isSelected 
-                              ? 'bg-primary/10 border-primary ring-2 ring-primary/30' 
-                              : 'bg-card border-border hover:bg-secondary/60'
-                          }`}
-                        >
-                          <div className="flex items-center gap-3">
-                            <img
-                              src={`https://api.dicebear.com/9.x/notionists/svg?seed=${cust.name.replace(' ', '')}`}
-                              alt={cust.name}
-                              className="w-10 h-10 rounded-full bg-secondary border border-border"
-                            />
-                            <div className="text-left">
-                              <p className="font-bold text-xs text-foreground">{cust.name}</p>
-                              <p className="text-[11px] text-muted-foreground">{cust.phone}</p>
-                            </div>
-                          </div>
-                          <div className="flex items-center gap-3">
-                            <span className="text-[10px] font-extrabold px-2 py-0.5 rounded bg-amber-500/10 text-amber-600 dark:text-amber-400">
-                              {cust.tier}
-                            </span>
-                            {isSelected && <CheckCircle2 size={18} className="text-primary" />}
-                          </div>
-                        </button>
-                      );
-                    })}
-                  </div>
-                  <div className="flex justify-between pt-2">
-                    <button
-                      onClick={() => setSimStep(1)}
-                      className="px-4 py-2 text-xs font-bold text-muted-foreground hover:text-foreground cursor-pointer"
-                    >
-                      &larr; Back to Garment
-                    </button>
-                    <button
-                      onClick={() => setSimStep(3)}
-                      className="px-6 py-2.5 bg-primary text-primary-foreground text-xs font-bold rounded-xl flex items-center gap-2 hover:opacity-90 transition-all cursor-pointer"
-                    >
-                      Next: Review & Send Bill &rarr;
-                    </button>
-                  </div>
-                </motion.div>
-              )}
-
-              {/* Step 3: Send Bill & Trigger WhatsApp */}
-              {simStep === 3 && (
-                <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-4">
-                  <h3 className="text-sm font-bold text-foreground">Step 3: Trigger Instant WhatsApp Paperless Bill</h3>
-                  
-                  <div className="p-4 rounded-2xl bg-card border border-border space-y-3 text-xs">
-                    <div className="flex justify-between border-b border-border pb-2">
-                      <span className="text-muted-foreground">Selected Item:</span>
-                      <span className="font-bold text-foreground">{simSelectedItem.name} ({simSelectedItem.size})</span>
-                    </div>
-                    <div className="flex justify-between border-b border-border pb-2">
-                      <span className="text-muted-foreground">Customer:</span>
-                      <span className="font-bold text-foreground">{simSelectedCustomer.name} ({simSelectedCustomer.phone})</span>
-                    </div>
-                    <div className="flex justify-between font-bold text-sm text-foreground pt-1">
-                      <span>Grand Total:</span>
-                      <span className="font-mono text-primary">₹{simSelectedItem.price}</span>
-                    </div>
-                  </div>
-
-                  <div className="flex justify-between items-center pt-2">
-                    <button
-                      onClick={() => setSimStep(2)}
-                      className="px-4 py-2 text-xs font-bold text-muted-foreground hover:text-foreground cursor-pointer"
-                    >
-                      &larr; Change Customer
-                    </button>
-
-                    <button
-                      onClick={() => setSimBillSent(true)}
-                      className={`px-8 py-3.5 text-xs font-black rounded-xl flex items-center gap-2 shadow-lg transition-all cursor-pointer ${
-                        simBillSent 
-                          ? 'bg-emerald-600 text-white' 
-                          : 'bg-primary text-primary-foreground hover:shadow-primary/30 hover:scale-[1.02]'
+                      key={item.id}
+                      onClick={() => {
+                        setSimSelectedItem(item);
+                        setSimBillSent(false);
+                      }}
+                      className={`p-4 rounded-2xl border text-left transition-all ${
+                        simSelectedItem.id === item.id
+                          ? 'border-primary bg-primary/10 shadow-md ring-2 ring-primary/30'
+                          : 'border-border/80 bg-background hover:bg-muted/50'
                       }`}
                     >
-                      {simBillSent ? (
-                        <>
-                          <CheckCircle2 size={18} /> WhatsApp Bill Sent!
-                        </>
-                      ) : (
-                        <>
-                          <Send size={16} /> Generate & Deliver Invoice &rarr;
-                        </>
-                      )}
+                      <span className="text-[10px] font-bold text-primary uppercase bg-primary/10 px-2 py-0.5 rounded">
+                        {item.tag}
+                      </span>
+                      <div className="font-bold text-sm text-foreground mt-2">{item.name}</div>
+                      <div className="text-xs text-muted-foreground">{item.size} • {item.color}</div>
+                      <div className="text-sm font-mono font-bold text-foreground mt-2">₹{item.price.toLocaleString()}</div>
                     </button>
-                  </div>
-                </motion.div>
-              )}
-            </div>
-
-            {/* Right iPhone Simulated WhatsApp Screen */}
-            <div className="lg:col-span-5 flex justify-center">
-              <div className="w-full max-w-[320px] rounded-[36px] bg-slate-950 p-3 shadow-2xl border-4 border-slate-800 text-slate-100">
-                {/* Notch & Speaker Bar */}
-                <div className="flex justify-center pb-2">
-                  <div className="w-24 h-4 bg-slate-800 rounded-full flex items-center justify-center">
-                    <div className="w-3 h-3 rounded-full bg-slate-900 border border-slate-700" />
-                  </div>
-                </div>
-
-                {/* WhatsApp Chat Top Header */}
-                <div className="bg-emerald-800 p-3 rounded-t-2xl flex items-center gap-2.5">
-                  <KlothOSLogo size={24} />
-                  <div className="flex-1">
-                    <p className="font-bold text-xs leading-none text-white">KlothOS Flagship</p>
-                    <p className="text-[9px] text-emerald-200">Verified Business Account</p>
-                  </div>
-                </div>
-
-                {/* Chat Body Bubble */}
-                <div className="bg-slate-900 min-h-[280px] p-3 rounded-b-2xl space-y-3 font-sans text-xs">
-                  <div className="bg-emerald-950/80 border border-emerald-800/60 p-3 rounded-2xl rounded-tl-xs space-y-2 text-[11px] shadow-sm">
-                    <p className="font-semibold text-emerald-300">
-                      Hello {simSelectedCustomer.name}! 🛍️
-                    </p>
-                    <p className="text-slate-300">
-                      Thank you for visiting KlothOS Bandra Flagship. Here is your digital tax invoice:
-                    </p>
-                    
-                    <div className="bg-slate-900/80 p-2 rounded-xl border border-slate-800 space-y-1">
-                      <p className="font-bold text-white text-[10px]">Invoice #INV-2026-904</p>
-                      <p className="text-slate-400 text-[10px]">{simSelectedItem.name} ({simSelectedItem.size})</p>
-                      <p className="font-mono text-emerald-400 font-bold text-[11px]">Total Paid: ₹{simSelectedItem.price}</p>
-                    </div>
-
-                    <div className="flex justify-between items-center text-[9px] text-slate-400 pt-1">
-                      <span>Coins Earned: +{Math.round(simSelectedItem.price * 0.05)}</span>
-                      <span>18:32 ✔✔</span>
-                    </div>
-                  </div>
-
-                  {simBillSent && (
-                    <motion.div 
-                      initial={{ opacity: 0, scale: 0.9 }} 
-                      animate={{ opacity: 1, scale: 1 }}
-                      className="text-center text-[10px] text-emerald-400 font-bold bg-emerald-950/40 p-2 rounded-xl border border-emerald-800/40"
-                    >
-                      ⚡ Customer received receipt on WhatsApp!
-                    </motion.div>
-                  )}
+                  ))}
                 </div>
               </div>
-            </div>
-          </div>
-        </section>
 
-        {/* SECTION: INTERACTIVE ROI CALCULATOR */}
-        <section id="calculator" className="scroll-mt-28 space-y-8">
-          <div className="text-center max-w-2xl mx-auto space-y-3">
-            <span className="text-xs font-black uppercase tracking-widest text-amber-500 bg-amber-500/10 px-3.5 py-1 rounded-full border border-amber-500/20">
-              Interactive ROI Model
-            </span>
-            <h2 className="text-3xl sm:text-4xl font-extrabold text-foreground tracking-tight">
-              Calculate Your Boutique's Annual Savings
+              {/* STEP 2: SELECT CUSTOMER */}
+              <div>
+                <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider block mb-3">
+                  Step 2: Select VIP Customer Profile
+                </label>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  {SIMULATOR_CUSTOMERS.map((cust) => (
+                    <button
+                      key={cust.id}
+                      onClick={() => {
+                        setSimSelectedCustomer(cust);
+                        setSimBillSent(false);
+                      }}
+                      className={`p-4 rounded-2xl border text-left transition-all ${
+                        simSelectedCustomer.id === cust.id
+                          ? 'border-primary bg-primary/10 shadow-md ring-2 ring-primary/30'
+                          : 'border-border/80 bg-background hover:bg-muted/50'
+                      }`}
+                    >
+                      <span className="text-[10px] font-bold text-purple-600 bg-purple-500/10 px-2 py-0.5 rounded">
+                        {cust.tier}
+                      </span>
+                      <div className="font-bold text-sm text-foreground mt-2">{cust.name}</div>
+                      <div className="text-xs font-mono text-muted-foreground">{cust.phone}</div>
+                      <div className="text-xs font-mono text-amber-600 font-medium mt-1">{cust.coins} Coins</div>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* SIMULATED BILL SUMMARY ACTION */}
+              <div className="p-6 rounded-2xl bg-muted/40 border border-border/80 flex flex-wrap items-center justify-between gap-4">
+                <div>
+                  <div className="text-xs text-muted-foreground">Cart Total (GST 12% Incl.)</div>
+                  <div className="text-2xl font-extrabold font-mono text-foreground">
+                    ₹{Math.round(simSelectedItem.price * 1.12).toLocaleString()}
+                  </div>
+                  <div className="text-xs text-emerald-600 font-medium mt-0.5">
+                    + {Math.round(simSelectedItem.price * 0.05)} Reward Coins Earned
+                  </div>
+                </div>
+
+                <button
+                  onClick={() => setSimBillSent(true)}
+                  disabled={simBillSent}
+                  className="px-6 py-3.5 rounded-xl bg-primary text-primary-foreground font-bold text-sm hover:opacity-90 transition-all shadow-lg flex items-center gap-2 disabled:opacity-50"
+                >
+                  <Send className="w-4 h-4" />
+                  <span>{simBillSent ? 'Bill Sent on WhatsApp!' : 'Process & Dispatch WhatsApp Bill'}</span>
+                </button>
+              </div>
+
+            </div>
+
+            {/* LIVE WHATSAPP PREVIEW SCREEN */}
+            <div className="lg:col-span-5">
+              <div className="rounded-3xl border border-border bg-slate-950 text-white p-5 shadow-2xl space-y-4">
+                <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+                  <div className="flex items-center gap-2">
+                    <div className="w-3 h-3 rounded-full bg-red-500" />
+                    <div className="w-3 h-3 rounded-full bg-yellow-500" />
+                    <div className="w-3 h-3 rounded-full bg-green-500" />
+                  </div>
+                  <span className="text-xs font-mono text-slate-400">WhatsApp Simulator</span>
+                </div>
+
+                {simBillSent ? (
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    className="space-y-3"
+                  >
+                    <div className="bg-emerald-950/80 border border-emerald-800 p-3 rounded-xl flex items-center gap-3">
+                      <div className="w-8 h-8 rounded-full bg-emerald-600 flex items-center justify-center font-bold text-xs">K</div>
+                      <div>
+                        <div className="text-xs font-bold">KlothOS Store Official</div>
+                        <div className="text-[10px] text-emerald-400">Message Delivered</div>
+                      </div>
+                    </div>
+
+                    <div className="bg-slate-900 border border-slate-800 p-4 rounded-2xl text-xs space-y-3">
+                      <p className="font-semibold text-emerald-400">
+                        Hello {simSelectedCustomer.name}! Thank you for your purchase at KlothOS.
+                      </p>
+                      
+                      <div className="space-y-1 text-slate-300 font-mono text-[11px]">
+                        <div>Item: {simSelectedItem.name} ({simSelectedItem.size})</div>
+                        <div>Price: ₹{simSelectedItem.price.toLocaleString()}</div>
+                        <div>Total Bill: ₹{Math.round(simSelectedItem.price * 1.12).toLocaleString()}</div>
+                      </div>
+
+                      <div className="p-2.5 rounded-lg bg-slate-950 border border-slate-800 flex items-center justify-between text-[11px]">
+                        <span className="font-mono text-slate-300">TaxInvoice_#KL7741.pdf</span>
+                        <span className="text-emerald-400 font-bold">Download PDF</span>
+                      </div>
+
+                      <div className="text-[11px] text-amber-300 border-t border-slate-800 pt-2 flex justify-between">
+                        <span>New Loyalty Coin Balance:</span>
+                        <span className="font-bold">{simSelectedCustomer.coins + Math.round(simSelectedItem.price * 0.05)} Coins</span>
+                      </div>
+                    </div>
+                  </motion.div>
+                ) : (
+                  <div className="py-16 text-center text-slate-500 space-y-2">
+                    <MessageSquare className="w-8 h-8 mx-auto text-slate-700 animate-pulse" />
+                    <div className="text-xs">Click "Process & Dispatch WhatsApp Bill" to see live simulation</div>
+                  </div>
+                )}
+              </div>
+            </div>
+
+          </div>
+
+        </div>
+      </section>
+
+      {/* DYNAMIC FINANCIAL ROI CALCULATOR */}
+      <section id="roi-calculator" className="py-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto w-full">
+        <div className="rounded-3xl border border-border/80 bg-gradient-to-br from-card via-background to-card p-6 sm:p-12 shadow-2xl">
+          
+          <div className="text-center max-w-3xl mx-auto mb-12 space-y-3">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-teal-500/10 text-teal-600 text-xs font-semibold uppercase tracking-wider">
+              <Calculator className="w-3.5 h-3.5" /> Savings & Profit Calculator
+            </div>
+            <h2 className="text-3xl sm:text-5xl font-extrabold text-foreground">
+              Calculate Your Store's Annual ROI
             </h2>
-            <p className="text-sm text-muted-foreground">
-              Adjust the sliders below to estimate your exact paper costs saved, checkout hours recovered, and unlocked dead-stock capital.
+            <p className="text-sm sm:text-base text-muted-foreground">
+              See how much paper cost, checkout labor, and deadstock capital KlothOS recovers for your store.
             </p>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center bg-card/60 backdrop-blur-xl border border-border/80 rounded-3xl p-6 sm:p-10 shadow-lg">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
             
-            {/* Left Sliders */}
-            <div className="lg:col-span-7 space-y-8">
+            {/* SLIDERS INPUT */}
+            <div className="lg:col-span-6 space-y-8">
               
-              {/* Slider 1: Monthly Bills */}
-              <div className="space-y-3">
-                <div className="flex justify-between text-xs font-bold">
-                  <span className="text-foreground">Monthly Bills Processed:</span>
-                  <span className="font-mono text-primary font-black text-sm">{calcBillsPerMonth.toLocaleString()} bills / mo</span>
+              <div>
+                <div className="flex justify-between items-center mb-2">
+                  <label className="text-sm font-semibold text-foreground">Monthly Bill / Invoice Volume</label>
+                  <span className="text-base font-bold font-mono text-primary">{calcBillsPerMonth.toLocaleString()} Bills/Mo</span>
                 </div>
                 <input
                   type="range"
@@ -597,417 +548,199 @@ export const LandingView: React.FC<LandingViewProps> = ({
                   step="100"
                   value={calcBillsPerMonth}
                   onChange={(e) => setCalcBillsPerMonth(Number(e.target.value))}
-                  className="w-full h-2.5 bg-secondary rounded-lg appearance-none cursor-pointer accent-primary"
+                  className="w-full h-2 bg-muted rounded-lg appearance-none cursor-pointer accent-primary"
                 />
-                <div className="flex justify-between text-[10px] text-muted-foreground font-semibold">
+                <div className="flex justify-between text-[11px] text-muted-foreground mt-1">
                   <span>200 bills</span>
-                  <span>2,500 bills</span>
                   <span>5,000 bills</span>
                 </div>
               </div>
 
-              {/* Slider 2: Dead Stock Capital */}
-              <div className="space-y-3">
-                <div className="flex justify-between text-xs font-bold">
-                  <span className="text-foreground">Estimated Rack Dead-Stock Capital:</span>
-                  <span className="font-mono text-amber-500 font-black text-sm">₹{calcDeadStockValue.toLocaleString('en-IN')}</span>
+              <div>
+                <div className="flex justify-between items-center mb-2">
+                  <label className="text-sm font-semibold text-foreground">Estimated Non-Moving Deadstock Value</label>
+                  <span className="text-base font-bold font-mono text-primary">₹{calcDeadStockValue.toLocaleString()}</span>
                 </div>
                 <input
                   type="range"
                   min="50000"
                   max="2000000"
-                  step="50000"
+                  step="25000"
                   value={calcDeadStockValue}
                   onChange={(e) => setCalcDeadStockValue(Number(e.target.value))}
-                  className="w-full h-2.5 bg-secondary rounded-lg appearance-none cursor-pointer accent-amber-500"
+                  className="w-full h-2 bg-muted rounded-lg appearance-none cursor-pointer accent-primary"
                 />
-                <div className="flex justify-between text-[10px] text-muted-foreground font-semibold">
+                <div className="flex justify-between text-[11px] text-muted-foreground mt-1">
                   <span>₹50,000</span>
-                  <span>₹10,000,000</span>
-                  <span>₹2,000,000</span>
+                  <span>₹20,000,000</span>
                 </div>
               </div>
+
             </div>
 
-            {/* Right Live Savings Output Card */}
-            <div className="lg:col-span-5 bg-gradient-to-br from-card via-card to-accent/40 border border-border p-6 rounded-2xl space-y-6 shadow-md">
-              <h3 className="text-xs font-black uppercase tracking-wider text-muted-foreground flex items-center gap-2">
-                <Calculator size={16} className="text-primary" /> Projected Yearly Impact
-              </h3>
-
-              <div className="space-y-4 text-xs">
-                <div className="flex justify-between items-center border-b border-border pb-3">
-                  <span className="text-muted-foreground">Paper Invoices Saved:</span>
-                  <span className="font-mono font-bold text-foreground text-sm">₹{paperCostSavedYearly.toLocaleString('en-IN')} / yr</span>
+            {/* FINANCIAL PROJECTION DISPLAY BOX */}
+            <div className="lg:col-span-6">
+              <div className="p-8 rounded-3xl border border-primary/30 bg-primary/5 dark:bg-primary/10 shadow-2xl space-y-6">
+                
+                <div className="text-xs font-mono text-primary uppercase font-bold tracking-wider">
+                  PROJECTED ANNUAL VALUE ADDED
                 </div>
 
-                <div className="flex justify-between items-center border-b border-border pb-3">
-                  <span className="text-muted-foreground">Cashier Time Recovered:</span>
-                  <span className="font-mono font-bold text-foreground text-sm">{checkoutHoursSavedMonthly} hrs / month</span>
+                <div className="text-4xl sm:text-6xl font-extrabold text-foreground font-mono">
+                  ₹{totalValueAddedYearly.toLocaleString()}
                 </div>
 
-                <div className="flex justify-between items-center border-b border-border pb-3">
-                  <span className="text-muted-foreground">Dead-Stock Liquidation Lift:</span>
-                  <span className="font-mono font-bold text-amber-500 text-sm">₹{deadStockRecoveredYearly.toLocaleString('en-IN')}</span>
-                </div>
-              </div>
-
-              <div className="p-4 rounded-xl bg-primary/10 border border-primary/20 space-y-1">
-                <p className="text-[10px] uppercase font-extrabold text-primary tracking-widest">Total Estimated Value Created</p>
-                <p className="font-mono text-3xl font-black text-primary">₹{totalValueAddedYearly.toLocaleString('en-IN')}</p>
-                <p className="text-[11px] text-muted-foreground font-medium pt-1">
-                  Based on paper cost reduction, employee productivity gain, and dead-stock clearance lift.
-                </p>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* SECTION: TABBED FEATURE SHOWCASE */}
-        <section id="features" className="scroll-mt-28 space-y-8">
-          <div className="text-center max-w-2xl mx-auto space-y-3">
-            <span className="text-xs font-black uppercase tracking-widest text-primary bg-primary/10 px-3.5 py-1 rounded-full border border-primary/20">
-              Core Capabilities
-            </span>
-            <h2 className="text-3xl sm:text-4xl font-extrabold text-foreground tracking-tight">
-              Engineered Specially for Fashion Retailers
-            </h2>
-          </div>
-
-          {/* Feature Tabs Selector */}
-          <div className="flex justify-center gap-2 max-w-xl mx-auto bg-card border border-border p-1.5 rounded-2xl">
-            <button
-              onClick={() => setActiveFeatureTab('matrix')}
-              className={`flex-1 py-2.5 px-4 text-xs font-bold rounded-xl transition-all cursor-pointer ${
-                activeFeatureTab === 'matrix' ? 'bg-primary text-primary-foreground shadow-xs' : 'text-muted-foreground hover:text-foreground'
-              }`}
-            >
-              Touch Garment Matrix
-            </button>
-            <button
-              onClick={() => setActiveFeatureTab('whatsapp')}
-              className={`flex-1 py-2.5 px-4 text-xs font-bold rounded-xl transition-all cursor-pointer ${
-                activeFeatureTab === 'whatsapp' ? 'bg-primary text-primary-foreground shadow-xs' : 'text-muted-foreground hover:text-foreground'
-              }`}
-            >
-              WhatsApp Invoicing
-            </button>
-            <button
-              onClick={() => setActiveFeatureTab('deadstock')}
-              className={`flex-1 py-2.5 px-4 text-xs font-bold rounded-xl transition-all cursor-pointer ${
-                activeFeatureTab === 'deadstock' ? 'bg-primary text-primary-foreground shadow-xs' : 'text-muted-foreground hover:text-foreground'
-              }`}
-            >
-              Dead-Stock Radar
-            </button>
-          </div>
-
-          {/* Feature Tab Contents */}
-          <div className="bg-card/60 backdrop-blur-xl border border-border/80 rounded-3xl p-8 sm:p-12 shadow-lg">
-            {activeFeatureTab === 'matrix' && (
-              <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
-                <div className="space-y-4">
-                  <div className="w-10 h-10 rounded-2xl bg-primary/20 text-primary flex items-center justify-center font-bold">
-                    <ShoppingBag size={22} />
-                  </div>
-                  <h3 className="text-2xl font-black text-foreground">Tap & Bill in Seconds</h3>
-                  <p className="text-sm text-muted-foreground leading-relaxed">
-                    Say goodbye to bulky barcode scanners and missing price tags. KlothOS presents an intuitive color & size matrix allowing cashiers to select items with single taps.
-                  </p>
-                  <ul className="space-y-2 text-xs font-semibold text-foreground">
-                    <li className="flex items-center gap-2"><CheckCircle2 size={16} className="text-primary" /> Single tap size/color swatches</li>
-                    <li className="flex items-center gap-2"><CheckCircle2 size={16} className="text-primary" /> Instant stock sync across registers</li>
-                    <li className="flex items-center gap-2"><CheckCircle2 size={16} className="text-primary" /> Built-in custom discounts & coin redemption</li>
-                  </ul>
-                </div>
-                <div className="p-6 rounded-2xl bg-secondary/60 border border-border space-y-3">
-                  <p className="text-xs font-bold text-foreground">Matrix Performance Benchmark</p>
-                  <div className="space-y-2 text-xs">
-                    <div>
-                      <div className="flex justify-between text-[11px] font-bold text-muted-foreground mb-1">
-                        <span>KlothOS Touch Matrix</span>
-                        <span className="text-primary">2.1 seconds</span>
-                      </div>
-                      <div className="w-full h-2 bg-secondary rounded-full overflow-hidden">
-                        <div className="h-full bg-primary rounded-full w-[25%]" />
-                      </div>
-                    </div>
-                    <div>
-                      <div className="flex justify-between text-[11px] font-bold text-muted-foreground mb-1">
-                        <span>Legacy Barcode POS</span>
-                        <span>14.5 seconds</span>
-                      </div>
-                      <div className="w-full h-2 bg-secondary rounded-full overflow-hidden">
-                        <div className="h-full bg-muted-foreground/40 rounded-full w-[90%]" />
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </motion.div>
-            )}
-
-            {activeFeatureTab === 'whatsapp' && (
-              <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
-                <div className="space-y-4">
-                  <div className="w-10 h-10 rounded-2xl bg-emerald-500/20 text-emerald-600 flex items-center justify-center font-bold">
-                    <MessageSquare size={22} />
-                  </div>
-                  <h3 className="text-2xl font-black text-foreground">97% Open Rate Paperless Bills</h3>
-                  <p className="text-sm text-muted-foreground leading-relaxed">
-                    Paper receipts end up in the trash. KlothOS auto-delivers official PDF & interactive text invoices directly to the customer's WhatsApp number.
-                  </p>
-                  <ul className="space-y-2 text-xs font-semibold text-foreground">
-                    <li className="flex items-center gap-2"><CheckCircle2 size={16} className="text-emerald-500" /> Automatic WhatsApp Cloud API integration</li>
-                    <li className="flex items-center gap-2"><CheckCircle2 size={16} className="text-emerald-500" /> Zero paper roll printing costs</li>
-                    <li className="flex items-center gap-2"><CheckCircle2 size={16} className="text-emerald-500" /> Track bill delivery & read receipts</li>
-                  </ul>
-                </div>
-                <div className="p-6 rounded-2xl bg-emerald-950/20 border border-emerald-800/40 text-xs space-y-2">
-                  <p className="font-bold text-emerald-400">Meta API Verified Delivery Status</p>
-                  <p className="text-muted-foreground text-[11px]">Average delivery latency: 840ms across all Indian telecom networks.</p>
-                </div>
-              </motion.div>
-            )}
-
-            {activeFeatureTab === 'deadstock' && (
-              <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
-                <div className="space-y-4">
-                  <div className="w-10 h-10 rounded-2xl bg-amber-500/20 text-amber-600 flex items-center justify-center font-bold">
-                    <BarChart3 size={22} />
-                  </div>
-                  <h3 className="text-2xl font-black text-foreground">Clear Idle Rack Capital Fast</h3>
-                  <p className="text-sm text-muted-foreground leading-relaxed">
-                    KlothOS automatically tracks rack age for every garment SKU. Identify slow-moving items over 60 days idle and liquidate them to relevant customer cohorts.
-                  </p>
-                  <ul className="space-y-2 text-xs font-semibold text-foreground">
-                    <li className="flex items-center gap-2"><CheckCircle2 size={16} className="text-amber-500" /> Automatic rack-age detection (30/60/90 days)</li>
-                    <li className="flex items-center gap-2"><CheckCircle2 size={16} className="text-amber-500" /> Idle capital valuation counter</li>
-                    <li className="flex items-center gap-2"><CheckCircle2 size={16} className="text-amber-500" /> Targeted clearance triggers</li>
-                  </ul>
-                </div>
-                <div className="p-6 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-xs space-y-2">
-                  <p className="font-bold text-amber-500">Rack Capital Liquidation Engine</p>
-                  <p className="text-muted-foreground text-[11px]">Boutiques report an average ₹2.4 Lakhs in unlocked capital within 30 days of implementation.</p>
-                </div>
-              </motion.div>
-            )}
-          </div>
-        </section>
-
-        {/* SECTION: LEGACY VS KLOTHOS COMPARISON */}
-        <section id="comparison" className="scroll-mt-28 space-y-8">
-          <div className="text-center max-w-2xl mx-auto space-y-3">
-            <span className="text-xs font-black uppercase tracking-widest text-primary bg-primary/10 px-3.5 py-1 rounded-full border border-primary/20">
-              Why Upgrade
-            </span>
-            <h2 className="text-3xl sm:text-4xl font-extrabold text-foreground tracking-tight">
-              Legacy POS vs. KlothOS Operating System
-            </h2>
-          </div>
-
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs border-collapse bg-card/60 backdrop-blur-xl border border-border rounded-3xl shadow-lg">
-              <thead>
-                <tr className="border-b border-border text-muted-foreground font-extrabold uppercase tracking-wider">
-                  <th className="p-4 sm:p-6">Feature</th>
-                  <th className="p-4 sm:p-6 bg-secondary/40 text-muted-foreground">Legacy Barcode POS</th>
-                  <th className="p-4 sm:p-6 bg-primary/10 text-primary font-black">KlothOS Touch OS</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-border/60">
-                <tr>
-                  <td className="p-4 sm:p-6 font-bold text-foreground">Checkout Method</td>
-                  <td className="p-4 sm:p-6 text-muted-foreground bg-secondary/20">Barcode scanner gun required</td>
-                  <td className="p-4 sm:p-6 font-bold text-foreground bg-primary/5">3-tap Garment Touch Matrix</td>
-                </tr>
-                <tr>
-                  <td className="p-4 sm:p-6 font-bold text-foreground">Receipt Delivery</td>
-                  <td className="p-4 sm:p-6 text-muted-foreground bg-secondary/20">Thermal paper rolls (Gets thrown away)</td>
-                  <td className="p-4 sm:p-6 font-bold text-emerald-600 dark:text-emerald-400 bg-primary/5">Instant WhatsApp Paperless Invoice</td>
-                </tr>
-                <tr>
-                  <td className="p-4 sm:p-6 font-bold text-foreground">Hardware Needed</td>
-                  <td className="p-4 sm:p-6 text-muted-foreground bg-secondary/20">Heavy desktop, barcode gun, thermal printer</td>
-                  <td className="p-4 sm:p-6 font-bold text-foreground bg-primary/5">Any iPad, Laptop, or Tablet browser</td>
-                </tr>
-                <tr>
-                  <td className="p-4 sm:p-6 font-bold text-foreground">Dead-Stock Monitoring</td>
-                  <td className="p-4 sm:p-6 text-muted-foreground bg-secondary/20">Manual spreadsheet checks</td>
-                  <td className="p-4 sm:p-6 font-bold text-amber-500 bg-primary/5">Automated Rack-Age Radar</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </section>
-
-        {/* TESTIMONIALS SECTION */}
-        <section className="space-y-8">
-          <div className="text-center max-w-2xl mx-auto space-y-3">
-            <span className="text-xs font-black uppercase tracking-widest text-primary bg-primary/10 px-3.5 py-1 rounded-full border border-primary/20">
-              Trusted by Top Boutiques
-            </span>
-            <h2 className="text-3xl sm:text-4xl font-extrabold text-foreground tracking-tight">
-              Loved by Fashion Retailers
-            </h2>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {[
-              {
-                name: 'Vikram Merchant',
-                role: 'Founder, Bandra Linen Atelier',
-                text: 'Switching to KlothOS eliminated barcode scanners completely. Our cashiers bill items in seconds, and customers love getting receipts on WhatsApp!',
-                seed: 'Vikram'
-              },
-              {
-                name: 'Radhika Sen',
-                role: 'Owner, Juhu Silk & Apparel',
-                text: 'The dead-stock clearance feature alone recovered ₹3.2 Lakhs in idle rack capital within our first month of operation.',
-                seed: 'Radhika'
-              },
-              {
-                name: 'Karan Mehra',
-                role: 'Director, Kala Ghoda Denims',
-                text: 'Zero paper roll printing costs and 97% WhatsApp open rate. KlothOS is hands down the best POS investment we have made.',
-                seed: 'Karan'
-              }
-            ].map((t, idx) => (
-              <div key={idx} className="p-6 rounded-2xl bg-card/60 backdrop-blur-xl border border-border space-y-4 shadow-sm flex flex-col justify-between">
-                <div className="space-y-3">
-                  <div className="flex gap-1 text-amber-400">
-                    {[...Array(5)].map((_, i) => (
-                      <Star key={i} size={14} fill="currentColor" />
-                    ))}
-                  </div>
-                  <p className="text-xs text-muted-foreground italic leading-relaxed">"{t.text}"</p>
-                </div>
-
-                <div className="flex items-center gap-3 pt-2 border-t border-border/60">
-                  <img
-                    src={`https://api.dicebear.com/9.x/notionists/svg?seed=${t.seed}`}
-                    alt={t.name}
-                    className="w-9 h-9 rounded-full bg-secondary border border-border"
-                  />
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-4 border-t border-border/60">
                   <div>
-                    <p className="font-bold text-xs text-foreground">{t.name}</p>
-                    <p className="text-[10px] text-muted-foreground">{t.role}</p>
+                    <div className="text-xs text-muted-foreground">Paper Bill Savings</div>
+                    <div className="text-lg font-bold font-mono text-emerald-600">₹{paperCostSavedYearly.toLocaleString()}</div>
+                  </div>
+                  <div>
+                    <div className="text-xs text-muted-foreground">Deadstock Recovered</div>
+                    <div className="text-lg font-bold font-mono text-blue-600">₹{deadStockRecoveredYearly.toLocaleString()}</div>
+                  </div>
+                  <div>
+                    <div className="text-xs text-muted-foreground">Checkout Hours Saved</div>
+                    <div className="text-lg font-bold font-mono text-purple-600">{checkoutHoursSavedMonthly * 12} Hrs/Yr</div>
                   </div>
                 </div>
+
               </div>
-            ))}
-          </div>
-        </section>
+            </div>
 
-        {/* BOTTOM CTA BANNER */}
-        <section className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-primary/90 via-primary to-amber-500 text-primary-foreground p-8 sm:p-12 text-center space-y-6 shadow-2xl">
-          <h2 className="text-3xl sm:text-5xl font-black tracking-tight leading-tight">
-            Ready to Modernize Your Store Billing?
-          </h2>
-          <p className="text-sm sm:text-base font-medium max-w-xl mx-auto opacity-95">
-            Launch KlothOS in under 2 minutes. Zero hardware setup required.
-          </p>
-          <div className="flex justify-center pt-2">
-            <button
-              onClick={onLogin}
-              className="px-8 py-4 bg-slate-950 text-white hover:bg-slate-900 font-black text-sm rounded-2xl shadow-xl hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center gap-3 cursor-pointer"
-            >
-              <Flame size={20} className="text-primary" /> Launch POS Dashboard Now &rarr;
-            </button>
           </div>
-        </section>
-      </main>
 
-      {/* STICKY FLOATING CONVERSION BAR ON SCROLL */}
+        </div>
+      </section>
+
+      {/* ENTERPRISE MARQUEE & METRICS SECTION */}
+      <section id="testimonials" className="py-16 border-t border-b border-border/60 bg-muted/30">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
+            <div>
+              <div className="text-3xl sm:text-4xl font-extrabold font-mono text-foreground">₹120Cr+</div>
+              <div className="text-xs text-muted-foreground mt-1">Processed Volume</div>
+            </div>
+            <div>
+              <div className="text-3xl sm:text-4xl font-extrabold font-mono text-foreground">450+</div>
+              <div className="text-xs text-muted-foreground mt-1">Active Retail Outlets</div>
+            </div>
+            <div>
+              <div className="text-3xl sm:text-4xl font-extrabold font-mono text-foreground">99.99%</div>
+              <div className="text-xs text-muted-foreground mt-1">Cloud Uptime SLA</div>
+            </div>
+            <div>
+              <div className="text-3xl sm:text-4xl font-extrabold font-mono text-foreground">3.8M+</div>
+              <div className="text-xs text-muted-foreground mt-1">WhatsApp Bills Sent</div>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      {/* FOOTER & CTA */}
+      <footer className="py-16 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto w-full text-center space-y-8">
+        <KlothOSLogo size={48} className="mx-auto" />
+        <p className="text-sm text-muted-foreground max-w-md mx-auto">
+          KlothOS SaaS Inc. • Empowering fashion brands with real-time POS, WhatsApp paperless receipts, and AI deadstock liquidation.
+        </p>
+        <div className="text-xs text-muted-foreground border-t border-border/60 pt-8">
+          © {new Date().getFullYear()} KlothOS. All rights reserved. Built for high-volume retail.
+        </div>
+      </footer>
+
+      {/* STICKY BOTTOM BAR ON SCROLL */}
       <AnimatePresence>
         {showStickyCta && (
           <motion.div
-            initial={{ y: 80, opacity: 0 }}
+            initial={{ y: 100, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
-            exit={{ y: 80, opacity: 0 }}
-            className="fixed bottom-4 left-1/2 -translate-x-1/2 z-40 bg-card/90 backdrop-blur-xl border border-border px-5 py-3 rounded-2xl shadow-2xl flex items-center gap-4 text-xs max-w-md w-[92%]"
+            exit={{ y: 100, opacity: 0 }}
+            className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 px-6 py-3.5 rounded-full bg-card/90 border border-primary/40 backdrop-blur-2xl shadow-2xl flex items-center gap-6"
           >
-            <KlothOSLogo size={28} />
-            <div className="flex-1 min-w-0">
-              <p className="font-bold text-foreground truncate">KlothOS Touch POS</p>
-              <p className="text-[10px] text-muted-foreground truncate">Bill clothes in 3 taps on WhatsApp</p>
+            <div className="hidden sm:block text-xs font-semibold">
+              Ready to upgrade your store?
             </div>
             <button
-              onClick={onLogin}
-              className="px-4 py-2 bg-primary text-primary-foreground font-black text-xs rounded-xl shadow-md hover:opacity-90 transition-all shrink-0 cursor-pointer"
+              onClick={() => setShowLoginModal(true)}
+              className="px-5 py-2.5 rounded-full bg-primary text-primary-foreground font-bold text-xs hover:opacity-90 transition-all flex items-center gap-2 shadow-lg"
             >
-              Launch &rarr;
+              <span>Login to Store</span>
+              <ArrowRight className="w-3.5 h-3.5" />
             </button>
           </motion.div>
         )}
       </AnimatePresence>
 
-      {/* SIGN IN MODAL */}
+      {/* STORE SELECTOR & LOGIN MODAL */}
       <AnimatePresence>
         {showLoginModal && (
-          <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
-            <motion.div 
-              initial={{ scale: 0.95, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.95, opacity: 0 }}
-              className="bg-card border border-border w-full max-w-md rounded-3xl p-6 sm:p-8 shadow-2xl relative space-y-6"
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-background/80 backdrop-blur-md">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 10 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 10 }}
+              className="w-full max-w-md bg-card border border-border/80 rounded-3xl p-6 sm:p-8 shadow-2xl relative overflow-hidden"
             >
               <button
                 onClick={() => setShowLoginModal(false)}
-                className="absolute top-4 right-4 p-2 text-muted-foreground hover:text-foreground rounded-full hover:bg-secondary transition-colors cursor-pointer"
+                className="absolute top-5 right-5 p-2 rounded-full hover:bg-muted text-muted-foreground transition-colors"
               >
-                <X size={18} />
+                <X className="w-5 h-5" />
               </button>
 
-              <div className="space-y-2 text-center">
-                <KlothOSLogo size={44} className="mx-auto" />
-                <h3 className="text-xl font-extrabold text-foreground">Sign In to Register</h3>
-                <p className="text-xs text-muted-foreground">Select store outlet and enter cashier PIN to launch POS</p>
+              <div className="space-y-6">
+                <div className="text-center space-y-2">
+                  <KlothOSLogo size={48} className="mx-auto mb-2" />
+                  <h3 className="text-xl font-bold text-foreground">Select Store Outlet</h3>
+                  <p className="text-xs text-muted-foreground">Select your store counter location to access POS & Analytics</p>
+                </div>
+
+                <form onSubmit={handleLoginSubmit} className="space-y-4">
+                  <div>
+                    <label className="text-xs font-semibold text-muted-foreground block mb-2">Store Outlet</label>
+                    <select
+                      value={storeId}
+                      onChange={(e) => setStoreId(e.target.value)}
+                      className="w-full p-3 rounded-xl border border-border bg-background text-foreground text-sm focus:ring-2 focus:ring-primary outline-none"
+                    >
+                      <option value="bandra-west">Bandra West Flagship Store (Terminal #01)</option>
+                      <option value="juhu">Juhu Apparel Studio (Terminal #02)</option>
+                      <option value="indiranagar">Indiranagar Bengaluru (Terminal #01)</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="text-xs font-semibold text-muted-foreground block mb-2">Cashier / Staff PIN</label>
+                    <input
+                      type="password"
+                      value={pin}
+                      onChange={(e) => setPin(e.target.value)}
+                      placeholder="1234"
+                      className="w-full p-3 rounded-xl border border-border bg-background text-foreground text-sm font-mono focus:ring-2 focus:ring-primary outline-none"
+                    />
+                  </div>
+
+                  <button
+                    type="submit"
+                    className="w-full py-3.5 rounded-xl bg-primary text-primary-foreground font-bold text-sm hover:opacity-90 transition-all shadow-lg flex items-center justify-center gap-2"
+                  >
+                    <Lock className="w-4 h-4" />
+                    <span>Enter KlothOS POS</span>
+                  </button>
+                </form>
+
+                <div className="p-3 rounded-xl bg-muted/40 text-center text-xs text-muted-foreground">
+                  Demo Credentials pre-filled for testing.
+                </div>
               </div>
 
-              <form onSubmit={handleLoginSubmit} className="space-y-4 text-xs">
-                <div className="space-y-1.5 text-left">
-                  <label className="font-bold text-foreground">Select Store Branch</label>
-                  <select 
-                    value={storeId}
-                    onChange={(e) => setStoreId(e.target.value)}
-                    className="w-full p-3 bg-input border border-border rounded-xl font-medium focus:ring-2 focus:ring-ring"
-                  >
-                    <option value="bandra-west">Bandra West Flagship (#01)</option>
-                    <option value="juhu-studio">Juhu Studio (#02)</option>
-                    <option value="kala-ghoda">Kala Ghoda Atelier (#03)</option>
-                  </select>
-                </div>
-
-                <div className="space-y-1.5 text-left">
-                  <label className="font-bold text-foreground">Cashier PIN</label>
-                  <input
-                    type="password"
-                    value={pin}
-                    onChange={(e) => setPin(e.target.value)}
-                    placeholder="Enter 4-digit PIN"
-                    className="w-full p-3 bg-input border border-border rounded-xl font-mono text-center text-sm font-bold tracking-widest focus:ring-2 focus:ring-ring"
-                  />
-                </div>
-
-                <button
-                  type="submit"
-                  className="w-full py-3.5 bg-primary text-primary-foreground font-black text-xs rounded-xl shadow-lg hover:shadow-primary/30 transition-all flex items-center justify-center gap-2 cursor-pointer"
-                >
-                  <Lock size={15} /> Authenticate & Open Register &rarr;
-                </button>
-              </form>
             </motion.div>
           </div>
         )}
       </AnimatePresence>
 
-      {/* FOOTER */}
-      <footer className="border-t border-border bg-card/40 py-8 px-6 text-center text-xs text-muted-foreground space-y-2">
-        <p>&copy; 2026 KlothOS Operating System. All rights reserved.</p>
-        <p className="text-[10px]">Meta WhatsApp Cloud API v19.0 Verified Partner</p>
-      </footer>
     </div>
   );
 };
-
-export default LandingView;
