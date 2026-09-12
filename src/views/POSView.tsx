@@ -5,7 +5,6 @@ import {
   ShoppingBag, 
   User, 
   Phone, 
-  Award, 
   Trash2, 
   Plus, 
   Minus, 
@@ -14,9 +13,11 @@ import {
   Send,
   Maximize2,
   Minimize2,
-  Mic,
-  MicOff,
-  Sparkles
+  Sparkles,
+  CreditCard,
+  QrCode,
+  Banknote,
+  Percent
 } from 'lucide-react';
 import type { Product, ProductVariant, CartItem, Customer, Invoice } from '../types';
 
@@ -46,7 +47,6 @@ export const POSView: React.FC<POSViewProps> = ({
   onAddToCart,
   onUpdateQuantity,
   onRemoveFromCart,
-  onClearCart,
   selectedCustomer,
   onSelectCustomer,
   redeemCoins,
@@ -64,8 +64,19 @@ export const POSView: React.FC<POSViewProps> = ({
   const [customName, setCustomName] = useState<string>('');
   const [customCategory, setCustomCategory] = useState<'Shirts' | 'Trousers' | 'Denim' | 'Jackets' | 'Knits'>('Shirts');
   const [customPrice, setCustomPrice] = useState<string>('');
-  const [customSize, setCustomSize] = useState<string>('Free Size');
-  const [customColor, setCustomColor] = useState<string>('Standard');
+  const [customSize] = useState<string>('Free Size');
+  const [customColor] = useState<string>('Standard');
+
+  // Optional Custom Discount Percentage State (%)
+  const [discountPercent, setDiscountPercent] = useState<string>('');
+
+  // 3D Payment Method Modal State
+  const [showPaymentModal, setShowPaymentModal] = useState<boolean>(false);
+  const [paymentMethod, setPaymentMethod] = useState<'upi' | 'card' | 'cash'>('upi');
+  const [cashTendered, setCashTendered] = useState<string>('');
+
+  // WhatsApp Bill Confirmation Modal State
+  const [dispatchedInvoice, setDispatchedInvoice] = useState<{ invoice: Invoice; customer: Customer } | null>(null);
 
   useEffect(() => {
     setLocalProducts(products);
@@ -76,14 +87,36 @@ export const POSView: React.FC<POSViewProps> = ({
   const [customerNameInput, setCustomerNameInput] = useState<string>(selectedCustomer ? selectedCustomer.name : '');
 
   const [isProcessingCheckout, setIsProcessingCheckout] = useState<boolean>(false);
-  const [checkoutSuccessMsg, setCheckoutSuccessMsg] = useState<string | null>(null);
   
   // Whole Screen Feature for entire Fast Billing view
   const [isWholeScreen, setIsWholeScreen] = useState<boolean>(false);
 
-  // Voice Dictation (Ctrl + B) State
-  const [isListening, setIsListening] = useState<boolean>(false);
-  const [voiceFeedbackMsg, setVoiceFeedbackMsg] = useState<string | null>(null);
+  // Sync state with native browser Fullscreen API (e.g. Esc key pressed)
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      setIsWholeScreen(!!document.fullscreenElement);
+    };
+    document.addEventListener('fullscreenchange', handleFullscreenChange);
+    return () => {
+      document.removeEventListener('fullscreenchange', handleFullscreenChange);
+    };
+  }, []);
+
+  const toggleWholeScreen = () => {
+    if (!document.fullscreenElement) {
+      document.documentElement.requestFullscreen().catch((err) => {
+        console.warn('Native fullscreen failed:', err);
+      });
+      setIsWholeScreen(true);
+    } else {
+      if (document.exitFullscreen) {
+        document.exitFullscreen().catch((err) => {
+          console.warn('Native exit fullscreen failed:', err);
+        });
+      }
+      setIsWholeScreen(false);
+    }
+  };
 
   const categories = ['All', 'Shirts', 'Trousers', 'Denim', 'Jackets', 'Knits'];
 
@@ -100,202 +133,78 @@ export const POSView: React.FC<POSViewProps> = ({
       name: nameStr,
       category: customCategory,
       price: priceNum,
-      description: 'Custom added garment item',
-      image: 'https://images.unsplash.com/photo-1598033129183-c4f50c736f10?w=500&auto=format&fit=crop&q=60',
-      variants: [
-        {
-          id: `v-custom-${Date.now()}`,
-          size: sizeStr,
-          color: colorStr,
-          colorHex: '#f97316',
-          stock: 99,
-          sku: `SKU-CUST-${Math.floor(100 + Math.random() * 900)}`
-        }
-      ],
-      swatches: [{ name: colorStr, hex: '#f97316' }]
+      description: 'Custom added item',
+      image: '',
+      swatches: [{ name: colorStr, hex: '#4A5568' }],
+      variants: [{
+        id: `v-custom-${Date.now()}`,
+        size: sizeStr,
+        color: colorStr,
+        colorHex: '#4A5568',
+        sku: `CUST-${Math.floor(1000 + Math.random() * 9000)}`,
+        stock: 50
+      }]
     };
 
     setLocalProducts(prev => [newProduct, ...prev]);
     onAddToCart(newProduct, newProduct.variants[0]);
-
+    setShowCustomModal(false);
     setCustomName('');
     setCustomPrice('');
-    setCustomSize('Free Size');
-    setCustomColor('Standard');
-    setShowCustomModal(false);
   };
 
-  // Smart Voice Parser helper to convert spoken word-numbers and spaced digits
-  const parseVoiceInput = (rawTranscript: string) => {
-    const transcript = rawTranscript.trim();
-    setVoiceFeedbackMsg(`Heard: "${transcript}"`);
-
-    // Step 1: Map spoken number words to digits
-    const wordToDigitMap: Record<string, string> = {
-      zero: '0', oh: '0', one: '1', two: '2', to: '2', too: '2',
-      three: '3', four: '4', for: '4', five: '5', six: '6',
-      seven: '7', eight: '8', ate: '8', nine: '9'
-    };
-
-    let normalized = transcript.toLowerCase();
-    Object.keys(wordToDigitMap).forEach((word) => {
-      const reg = new RegExp(`\\b${word}\\b`, 'g');
-      normalized = normalized.replace(reg, wordToDigitMap[word]);
-    });
-
-    // Step 2: Extract all digits combined (ignoring spaces between spoken digits)
-    const allDigitsCombined = normalized.replace(/[^0-9]/g, '');
-
-    let extractedPhone = '';
-    let digits10 = '';
-
-    if (allDigitsCombined.length >= 10) {
-      // Extract 10-digit mobile number
-      digits10 = allDigitsCombined.slice(-10);
-      extractedPhone = `+91${digits10}`;
-    }
-
-    // Step 3: Extract Customer Name (strip digits and digit words from original transcript)
-    const extractedName = transcript
-      .replace(/\d+/g, '')
-      .replace(/\b(zero|oh|one|two|to|too|three|four|for|five|six|seven|eight|ate|nine|customer|mobile|number|phone|is)\b/gi, '')
-      .replace(/\s+/g, ' ')
-      .trim();
-
-    // Step 4: Apply to input state & auto-match customer profile
-    if (extractedPhone) {
-      setCustomerPhoneInput(extractedPhone);
-      const match = customers.find(c => c.phone.includes(digits10) || c.phone.replace(/\+91/, '').includes(digits10));
-      if (match) {
-        onSelectCustomer(match);
-        setCustomerNameInput(match.name);
-      } else if (extractedName) {
-        setCustomerNameInput(extractedName);
-      }
-    } else if (extractedName) {
-      setCustomerNameInput(extractedName);
-    }
-
-    setTimeout(() => {
-      setVoiceFeedbackMsg(null);
-    }, 4000);
-  };
-
-  // Toggle Voice Recognition
-  const toggleVoiceRecognition = () => {
-    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
-
-    if (SpeechRecognition) {
-      try {
-        const recognition = new SpeechRecognition();
-        recognition.continuous = false;
-        recognition.interimResults = false;
-        recognition.lang = 'en-US';
-
-        recognition.onstart = () => {
-          setIsListening(true);
-          setVoiceFeedbackMsg('🎙️ Listening... Speak Customer Name & Phone Number');
-        };
-
-        recognition.onresult = (event: any) => {
-          const transcript = event.results[0][0].transcript;
-          setIsListening(false);
-          parseVoiceInput(transcript);
-        };
-
-        recognition.onerror = () => {
-          setIsListening(false);
-          // Fallback simulation mode if speech recognition fails or is blocked
-          simulateVoiceDictation();
-        };
-
-        recognition.onend = () => {
-          setIsListening(false);
-        };
-
-        recognition.start();
-      } catch (e) {
-        simulateVoiceDictation();
-      }
-    } else {
-      // Fallback simulation mode
-      simulateVoiceDictation();
-    }
-  };
-
-  // Fallback Voice Dictation Simulation for quick testing
-  const simulateVoiceDictation = () => {
-    setIsListening(true);
-    setVoiceFeedbackMsg('🎙️ Voice Listening Active (Press Ctrl+B to dictate)...');
-
-    setTimeout(() => {
-      setIsListening(false);
-      const sampleVoiceString = 'Kabir Mehta 9930012345';
-      parseVoiceInput(sampleVoiceString);
-    }, 1200);
-  };
-
-  // Global Keyboard Listener for Ctrl + B / Cmd + B
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'b') {
-        e.preventDefault();
-        toggleVoiceRecognition();
-      }
-    };
-
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, []);
-
-  // Filter products by category and search term
-  const filteredProducts = localProducts.filter(p => {
-    const matchesCategory = selectedCategory === 'All' || p.category === selectedCategory;
-    const matchesSearch = !searchQuery || 
-      p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      p.category.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      p.variants.some(v => v.sku.toLowerCase().includes(searchQuery.toLowerCase()));
+  // Filter products by category and search
+  const filteredProducts = localProducts.filter(product => {
+    const matchesCategory = selectedCategory === 'All' || product.category === selectedCategory;
+    const matchesSearch = 
+      product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      product.category.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      product.variants.some(v => v.sku.toLowerCase().includes(searchQuery.toLowerCase()));
     return matchesCategory && matchesSearch;
   });
 
-  // Handle opening product variant modal
-  const handleOpenProductModal = (product: Product) => {
+  // Open item modal for size selection
+  const handleProductCardClick = (product: Product) => {
     setActiveModalProduct(product);
-    if (product.variants.length > 0) {
-      setSelectedSize(product.variants[0].size);
-      setSelectedColor(product.variants[0].color);
+    if (product.swatches.length > 0) {
+      setSelectedColor(product.swatches[0].name);
+    }
+    const availVariants = product.variants;
+    if (availVariants.length > 0) {
+      setSelectedSize(availVariants[0].size);
     }
   };
 
-  // Handle confirming variant selection and adding to cart
   const handleConfirmAddToCart = () => {
     if (!activeModalProduct) return;
     const targetVariant = activeModalProduct.variants.find(
-      v => v.size === selectedSize && v.color === selectedColor
+      v => v.color === selectedColor && v.size === selectedSize
     ) || activeModalProduct.variants[0];
 
     onAddToCart(activeModalProduct, targetVariant);
     setActiveModalProduct(null);
   };
 
-  // Handle Phone input change & auto-lookup
-  const handlePhoneInputChange = (phoneVal: string) => {
-    setCustomerPhoneInput(phoneVal);
-    if (phoneVal.trim()) {
-      const match = customers.find(c => c.phone.includes(phoneVal) || c.phone.replace(/\+91/, '').includes(phoneVal));
-      if (match) {
-        onSelectCustomer(match);
-        setCustomerNameInput(match.name);
+  // Quick lookup customer by phone with STRICT NUMERIC VALIDATION
+  const handlePhoneInputChange = (rawVal: string) => {
+    // Only allow numbers 0-9, + sign, and spaces
+    const cleanPhone = rawVal.replace(/[^0-9+\s]/g, '');
+    setCustomerPhoneInput(cleanPhone);
+
+    if (cleanPhone.length >= 3) {
+      const matched = customers.find(c => c.phone.includes(cleanPhone) || c.name.toLowerCase().includes(cleanPhone.toLowerCase()));
+      if (matched) {
+        onSelectCustomer(matched);
+        setCustomerNameInput(matched.name);
       }
     }
   };
 
-  // Handle Name input change
-  const handleNameInputChange = (nameVal: string) => {
-    setCustomerNameInput(nameVal);
-    if (selectedCustomer) {
-      onSelectCustomer({ ...selectedCustomer, name: nameVal });
-    }
+  // Shopper Name Input with STRICT ALPHABETIC VALIDATION
+  const handleNameInputChange = (rawVal: string) => {
+    // Only allow letters, spaces, hyphens and apostrophes
+    const cleanName = rawVal.replace(/[^a-zA-Z\s\-']/g, '');
+    setCustomerNameInput(cleanName);
   };
 
   // Clear customer profile
@@ -308,12 +217,18 @@ export const POSView: React.FC<POSViewProps> = ({
   // Financial calculations
   const subtotal = cart.reduce((sum, item) => sum + (item.product.price * item.quantity), 0);
   
-  let discount = 0;
+  // Percent Discount Calculation
+  const percentValue = parseFloat(discountPercent) || 0;
+  const manualPercentDiscount = Math.round((subtotal * percentValue) / 100);
+
+  // VIP Coin Discount Calculation
+  let coinDiscount = 0;
   if (selectedCustomer && redeemCoins && selectedCustomer.coinsBalance > 0) {
-    discount = Math.min(subtotal, selectedCustomer.coinsBalance);
+    coinDiscount = Math.min(Math.max(0, subtotal - manualPercentDiscount), selectedCustomer.coinsBalance);
   }
 
-  const taxableAmount = Math.max(0, subtotal - discount);
+  const totalDiscount = manualPercentDiscount + coinDiscount;
+  const taxableAmount = Math.max(0, subtotal - totalDiscount);
   const tax = Math.round(taxableAmount * 0.05); // 5% GST
   const grandTotal = taxableAmount + tax;
   const coinsEarned = Math.floor(grandTotal * 0.05); // 5% cashback coins
@@ -326,7 +241,7 @@ export const POSView: React.FC<POSViewProps> = ({
     const activeCustomerForBill: Customer = selectedCustomer || {
       id: `cust-${Date.now()}`,
       name: customerNameInput.trim() || 'Guest Shopper',
-      phone: customerPhoneInput.trim() || '+919930012345',
+      phone: customerPhoneInput.trim() || '+919820144820',
       email: '',
       tier: 'Silver',
       totalSpend: grandTotal,
@@ -349,44 +264,53 @@ export const POSView: React.FC<POSViewProps> = ({
           price: item.product.price
         })),
         subtotal,
-        discount,
+        discount: totalDiscount,
         tax,
         total: grandTotal,
         coinsEarned,
-        coinsRedeemed: discount,
+        coinsRedeemed: coinDiscount,
         whatsappStatus: 'Delivered'
       };
 
-      const targetPhone = activeCustomerForBill.phone;
-      setCheckoutSuccessMsg(`Bill Created & Receipt Sent to ${activeCustomerForBill.name} (${targetPhone})`);
-      
       onCompleteCheckout(newInvoice, activeCustomerForBill);
       setIsProcessingCheckout(false);
+      setShowPaymentModal(false);
 
-      setTimeout(() => {
-        setCheckoutSuccessMsg(null);
-      }, 4000);
-    }, 1000);
+      // Open WhatsApp Dispatch Popup
+      setDispatchedInvoice({
+        invoice: newInvoice,
+        customer: activeCustomerForBill
+      });
+
+    }, 1200);
   };
 
+  // Screen Mode Container Classes
+  const containerClasses = isWholeScreen
+    ? 'fixed inset-0 z-50 bg-background p-4 sm:p-6 w-screen h-screen overflow-hidden shadow-2xl space-y-3'
+    : 'lg:grid lg:grid-cols-12 gap-4 lg:gap-6 min-h-[calc(100vh-6rem)] lg:h-[calc(100vh-6rem)] overflow-y-auto lg:overflow-hidden pb-24 lg:pb-0';
+
+  const innerGridClasses = isWholeScreen
+    ? 'flex-1 flex flex-col lg:grid lg:grid-cols-12 gap-4 lg:gap-6 overflow-hidden flex-1 min-h-0'
+    : 'contents';
+
   return (
-    <div className={`flex flex-col lg:grid lg:grid-cols-12 gap-4 lg:gap-6 transition-all duration-300 ${
-      isWholeScreen 
-        ? 'fixed inset-0 z-50 bg-background p-4 sm:p-6 overflow-y-auto lg:overflow-hidden shadow-2xl min-h-screen lg:h-screen' 
-        : 'min-h-[calc(100vh-6rem)] lg:h-[calc(100vh-6rem)] overflow-y-auto lg:overflow-hidden pb-24 lg:pb-0'
-    }`}>
+    <div className={`flex flex-col ${containerClasses} transition-all duration-300`}>
+      
+      {/* WHOLE SCREEN INNER GRID WRAPPER */}
+      <div className={innerGridClasses}>
       
       {/* LEFT SECTION (65% width): Garment Matrix & Categories */}
       <div className="lg:col-span-8 flex flex-col space-y-4 lg:overflow-hidden pr-1">
         
         {/* Category Pills, Search & WHOLE SCREEN TOGGLE BUTTON */}
-        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-card p-3 rounded-2xl border border-border shadow-2xs">
-          <div className="flex items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0 scrollbar-none">
+        <div className="flex flex-col xl:flex-row items-stretch xl:items-center justify-between gap-2.5 bg-card p-2.5 rounded-2xl border border-border shadow-2xs">
+          <div className="flex-1 min-w-0 flex items-center gap-1.5 overflow-x-auto pb-1 xl:pb-0 scrollbar-none">
             {categories.map((cat) => (
               <button
                 key={cat}
                 onClick={() => setSelectedCategory(cat)}
-                className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all cursor-pointer ${
+                className={`px-3 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all cursor-pointer ${
                   selectedCategory === cat
                     ? 'bg-primary text-primary-foreground shadow-xs'
                     : 'bg-secondary text-secondary-foreground hover:bg-muted hover:text-foreground'
@@ -397,16 +321,16 @@ export const POSView: React.FC<POSViewProps> = ({
             ))}
           </div>
 
-          <div className="flex items-center gap-2 w-full sm:w-auto">
+          <div className="flex items-center gap-2 shrink-0">
             {/* Quick Search */}
-            <div className="relative flex-1 sm:w-56 shrink-0">
-              <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+            <div className="relative w-36 sm:w-44 shrink-0">
+              <Search size={13} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground" />
               <input
                 type="text"
                 placeholder="Search SKU, name..."
                 value={searchQuery}
                 onChange={(e) => onSearchChange(e.target.value)}
-                className="w-full pl-8 pr-3 py-1.5 text-xs bg-input border border-border rounded-xl focus:outline-none focus:ring-1 focus:ring-ring"
+                className="w-full pl-7 pr-2.5 py-1.5 text-xs bg-input border border-border rounded-xl focus:outline-none focus:ring-1 focus:ring-ring font-mono"
               />
             </div>
 
@@ -416,284 +340,197 @@ export const POSView: React.FC<POSViewProps> = ({
                 setCustomName('');
                 setShowCustomModal(true);
               }}
-              className="px-3 py-1.5 rounded-xl bg-primary/10 hover:bg-primary/20 text-primary border border-primary/30 font-bold text-xs shadow-xs transition-all flex items-center gap-1.5 shrink-0 cursor-pointer"
+              className="px-2.5 py-1.5 rounded-xl bg-primary/10 hover:bg-primary/20 text-primary border border-primary/30 font-bold text-xs shadow-xs transition-all flex items-center gap-1 shrink-0 cursor-pointer whitespace-nowrap"
               title="Add Custom Cloth / Garment Line Item"
             >
-              <Plus size={14} />
+              <Plus size={13} />
               <span>Custom Item</span>
             </button>
 
             {/* WHOLE SCREEN TOGGLE BUTTON */}
             <button
-              onClick={() => setIsWholeScreen(!isWholeScreen)}
-              className="px-3 py-1.5 rounded-xl bg-primary text-primary-foreground hover:opacity-90 font-bold text-xs shadow-xs transition-all flex items-center gap-1.5 shrink-0 cursor-pointer"
-              title={isWholeScreen ? "Exit Whole Screen Register" : "Expand Whole Screen Register"}
+              onClick={toggleWholeScreen}
+              className="px-2.5 py-1.5 rounded-xl bg-primary text-primary-foreground hover:opacity-90 font-bold text-xs shadow-xs transition-all flex items-center gap-1 shrink-0 cursor-pointer whitespace-nowrap"
+              title={isWholeScreen ? "Exit Fullscreen POS" : "Expand to Whole Screen POS"}
             >
-              {isWholeScreen ? (
-                <>
-                  <Minimize2 size={14} />
-                  <span>Exit Whole Screen</span>
-                </>
-              ) : (
-                <>
-                  <Maximize2 size={14} />
-                  <span>Whole Screen</span>
-                </>
-              )}
+              {isWholeScreen ? <Minimize2 size={13} /> : <Maximize2 size={13} />}
+              <span className="hidden sm:inline">{isWholeScreen ? 'Exit Full Screen' : 'Full Screen'}</span>
             </button>
           </div>
         </div>
 
         {/* Product Touch Grid */}
         <div className="flex-1 overflow-y-auto pr-1">
-          <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-3 gap-4">
+          <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-3 gap-3">
             {filteredProducts.map((product) => (
               <motion.div
                 key={product.id}
-                whileHover={{ scale: 1.015 }}
-                whileTap={{ scale: 0.98 }}
-                onClick={() => handleOpenProductModal(product)}
-                className="bg-card rounded-2xl p-3.5 border border-border hover:border-primary/50 shadow-xs cursor-pointer flex flex-col justify-between space-y-3 transition-all"
+                whileHover={{ y: -2 }}
+                onClick={() => handleProductCardClick(product)}
+                className="bg-card border border-border rounded-2xl p-3.5 flex flex-col justify-between hover:border-primary/50 transition-all shadow-2xs cursor-pointer group relative overflow-hidden"
               >
-                {/* Product Image & Swatches */}
-                <div className="relative aspect-4/3 rounded-xl overflow-hidden bg-secondary">
-                  <img
-                    src={product.image}
-                    alt={product.name}
-                    className="w-full h-full object-cover"
-                  />
-                  <span className="absolute top-2 left-2 text-[10px] font-extrabold uppercase px-2 py-0.5 bg-black/60 text-white backdrop-blur-xs rounded-md">
-                    {product.category}
-                  </span>
+                <div>
+                  <div className="flex items-center justify-between text-[10px] uppercase font-bold text-muted-foreground mb-1">
+                    <span>{product.category}</span>
+                    <span className="text-primary">{product.variants.length} Sizes</span>
+                  </div>
 
-                  {/* Swatches Overlay */}
-                  <div className="absolute bottom-2 right-2 flex items-center gap-1 bg-black/60 backdrop-blur-xs p-1 rounded-full">
-                    {product.swatches.map((swatch, idx) => (
+                  <h3 className="font-bold text-sm text-foreground group-hover:text-primary transition-colors line-clamp-1">
+                    {product.name}
+                  </h3>
+
+                  {/* Swatches Color Pills */}
+                  <div className="flex items-center gap-1 my-1.5">
+                    {product.swatches.map((sw) => (
                       <span
-                        key={idx}
-                        className="w-3 h-3 rounded-full border border-white/80"
-                        style={{ backgroundColor: swatch.hex }}
-                        title={swatch.name}
+                        key={sw.name}
+                        className="w-3 h-3 rounded-full border border-black/20 shrink-0"
+                        style={{ backgroundColor: sw.hex }}
+                        title={sw.name}
                       />
                     ))}
                   </div>
                 </div>
 
-                {/* Info */}
-                <div className="space-y-1">
-                  <h3 className="font-bold text-xs text-foreground line-clamp-1">
-                    {product.name}
-                  </h3>
-                  <p className="text-[11px] text-muted-foreground line-clamp-1">
-                    {product.variants.map(v => v.size).filter((v, i, a) => a.indexOf(v) === i).join(', ')}
-                  </p>
-                </div>
-
-                {/* Price & Touch Action Button */}
-                <div className="flex items-center justify-between pt-1 border-t border-border/60">
-                  <span className="font-mono font-extrabold text-sm text-primary">
+                <div className="flex items-center justify-between pt-2.5 border-t border-border/60">
+                  <div className="font-mono text-sm font-extrabold text-foreground">
                     ₹{product.price.toLocaleString('en-IN')}
-                  </span>
-                  <span className="px-2.5 py-1 bg-primary/10 text-primary text-[11px] font-bold rounded-lg hover:bg-primary hover:text-white transition-colors">
-                    Tap to Select
-                  </span>
+                  </div>
+
+                  <button className="p-1.5 rounded-xl bg-primary/10 group-hover:bg-primary group-hover:text-primary-foreground text-primary transition-all">
+                    <Plus size={14} />
+                  </button>
                 </div>
               </motion.div>
             ))}
-
-            {filteredProducts.length === 0 && (
-              <div className="col-span-full py-10 text-center space-y-3 bg-secondary/20 rounded-2xl border border-dashed border-border p-6">
-                <ShoppingBag size={36} className="mx-auto text-muted-foreground opacity-40" />
-                <p className="text-xs font-semibold text-foreground">No matching garments found {searchQuery ? `for "${searchQuery}"` : ''}</p>
-                <button
-                  onClick={() => {
-                    setCustomName(searchQuery);
-                    setShowCustomModal(true);
-                  }}
-                  className="px-4 py-2 bg-primary text-primary-foreground text-xs font-bold rounded-xl shadow-md hover:opacity-90 transition-all inline-flex items-center gap-1.5 cursor-pointer"
-                >
-                  <Plus size={14} /> Add {searchQuery ? `"${searchQuery}"` : 'Custom Item'} to Cart &rarr;
-                </button>
-              </div>
-            )}
           </div>
         </div>
       </div>
 
-      {/* MOBILE STICKY VIEW CART BUTTON */}
-      <div className="lg:hidden fixed bottom-4 left-4 right-4 z-40">
-        <button
-          onClick={() => document.getElementById('cart-section')?.scrollIntoView({ behavior: 'smooth' })}
-          className="w-full py-3.5 bg-primary text-primary-foreground font-bold rounded-2xl shadow-xl flex items-center justify-between px-6 border-2 border-primary-foreground/20 active:scale-95 transition-transform"
-        >
-          <span className="flex items-center gap-2"><ShoppingBag size={18} /> View Cart</span>
-          <span>{cart.length} items | ₹{grandTotal.toLocaleString()}</span>
-        </button>
-      </div>
-
-      {/* RIGHT SECTION (35% width): Cart & Customer Register */}
-      <div id="cart-section" className="lg:col-span-4 bg-card rounded-2xl border border-border p-4 shadow-sm overflow-hidden flex flex-col mt-4 lg:mt-0 lg:h-full">
+      {/* RIGHT SECTION (35% width): Cart, Customer Directory, & Checkout */}
+      <div className="lg:col-span-4 bg-card border border-border rounded-3xl p-4 flex flex-col justify-between shadow-xl space-y-3 overflow-y-auto max-h-full">
         
-        {/* Customer Profile Header & Voice Dictation Button */}
-        <div className="space-y-3 pb-3 border-b border-border">
+        {/* CUSTOMER DIRECTORY & VIP SELECTION */}
+        <div className="space-y-2 border-b border-border/60 pb-3 shrink-0">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-bold text-foreground flex items-center gap-1.5">
-              <User size={14} className="text-primary" /> Customer Profile
+            <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+              <User size={13} className="text-primary" /> Customer Profile
             </span>
 
-            <div className="flex items-center gap-2">
-              {/* VOICE DICTATION BUTTON (Ctrl + B) */}
+            {selectedCustomer && (
               <button
-                onClick={toggleVoiceRecognition}
-                className={`px-2.5 py-1 rounded-xl text-[11px] font-bold border transition-all flex items-center gap-1 cursor-pointer ${
-                  isListening 
-                    ? 'bg-red-500 text-white border-red-600 animate-pulse' 
-                    : 'bg-primary/10 text-primary border-primary/20 hover:bg-primary hover:text-white'
-                }`}
-                title="Press Ctrl+B or tap to speak Name & Phone"
+                onClick={handleClearCustomerProfile}
+                className="text-[11px] text-muted-foreground hover:text-destructive flex items-center gap-1"
               >
-                {isListening ? <MicOff size={13} /> : <Mic size={13} />}
-                <span>{isListening ? 'Listening...' : 'Voice (Ctrl+B)'}</span>
+                <X size={12} /> Clear
               </button>
-
-              {(selectedCustomer || customerPhoneInput || customerNameInput) && (
-                <button
-                  onClick={handleClearCustomerProfile}
-                  className="text-[10px] text-destructive hover:underline font-semibold cursor-pointer"
-                >
-                  Clear
-                </button>
-              )}
-            </div>
+            )}
           </div>
 
-          {/* Voice Dictation Status Notification */}
-          {voiceFeedbackMsg && (
-            <div className="p-2 bg-primary/10 text-primary border border-primary/20 rounded-xl text-[11px] font-bold text-center animate-pulse-live flex items-center justify-center gap-1">
-              <Sparkles size={12} /> {voiceFeedbackMsg}
-            </div>
-          )}
-
-          {/* DUAL EXPLICIT TOUCH-FRIENDLY INPUT FIELDS: Phone & Name */}
-          <div className="space-y-2.5 pt-1">
-            
-            {/* Field 1: Mobile Number Input */}
-            <div className="space-y-1">
-              <label className="text-xs font-bold text-foreground flex items-center justify-between">
-                <span className="flex items-center gap-1.5 text-primary">
-                  <Phone size={13} /> Customer Mobile Number
-                </span>
-                <span className="text-[10px] text-muted-foreground font-normal">WhatsApp Linked</span>
-              </label>
-              <div className="relative">
-                <input
-                  type="text"
-                  placeholder="e.g. 9820144820 or tap Voice"
-                  value={customerPhoneInput}
-                  onChange={(e) => handlePhoneInputChange(e.target.value)}
-                  className="w-full px-3 py-2 bg-input border border-border rounded-xl text-xs font-bold focus:outline-none focus:ring-2 focus:ring-ring"
-                />
-              </div>
-            </div>
-
-            {/* Field 2: Name Input */}
-            <div className="space-y-1">
-              <label className="text-xs font-bold text-foreground flex items-center justify-between">
-                <span className="flex items-center gap-1.5 text-primary">
-                  <User size={13} /> Customer Full Name
-                </span>
-              </label>
+          <div className="space-y-1.5">
+            {/* Line 1: Phone Number Input */}
+            <div className="relative">
+              <Phone size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
               <input
                 type="text"
-                placeholder="e.g. Rohan Sharma"
+                placeholder="Search / Enter Phone Number (+91)..."
+                value={customerPhoneInput}
+                onChange={(e) => handlePhoneInputChange(e.target.value)}
+                className="w-full pl-8 pr-3 py-1.5 text-xs bg-input border border-border rounded-xl font-mono focus:outline-none focus:ring-2 focus:ring-primary font-medium"
+              />
+            </div>
+
+            {/* Line 2: Big Size Shopper Name Input */}
+            <div className="relative">
+              <input
+                type="text"
+                placeholder="Shopper Full Name..."
                 value={customerNameInput}
                 onChange={(e) => handleNameInputChange(e.target.value)}
-                className="w-full px-3 py-2 bg-input border border-border rounded-xl text-xs font-medium focus:outline-none focus:ring-2 focus:ring-ring"
+                className="w-full px-3 py-2 text-xs font-extrabold bg-input border border-border rounded-xl focus:outline-none focus:ring-2 focus:ring-primary shadow-2xs placeholder:font-normal"
               />
             </div>
           </div>
 
-          {/* Member Pass Card if found */}
+          {/* ACTIVE CUSTOMER VIP BADGE CARD */}
           {selectedCustomer ? (
-            <div className="bg-accent/40 border border-accent p-3 rounded-xl space-y-2">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="font-bold text-xs text-accent-foreground">{selectedCustomer.name}</p>
-                  <p className="text-[10px] text-muted-foreground">{selectedCustomer.phone}</p>
+            <div className="p-2.5 rounded-xl bg-primary/10 border border-primary/30 flex items-center justify-between">
+              <div>
+                <div className="text-xs font-extrabold text-foreground flex items-center gap-1.5">
+                  {selectedCustomer.name}
+                  <span className="text-[10px] font-bold uppercase bg-amber-500/20 text-amber-600 px-1.5 py-0.5 rounded">
+                    {selectedCustomer.tier} VIP
+                  </span>
                 </div>
-                <span className={`text-[10px] font-extrabold px-2 py-0.5 rounded-full ${
-                  selectedCustomer.tier === 'Black VIP' ? 'bg-slate-900 text-white' :
-                  selectedCustomer.tier === 'Gold' ? 'bg-amber-400 text-slate-900' : 'bg-slate-200 text-slate-800'
-                }`}>
-                  {selectedCustomer.tier}
-                </span>
+                <div className="text-[11px] text-muted-foreground font-mono mt-0.5">
+                  Reward Balance: <span className="font-bold text-primary">{selectedCustomer.coinsBalance} Coins</span>
+                </div>
               </div>
 
-              {/* Fit Preference & Coins */}
-              <div className="flex items-center justify-between text-[11px] pt-1 border-t border-accent/60">
-                <span className="text-muted-foreground">
-                  Fit: <strong className="text-accent-foreground">{selectedCustomer.preferredFit}</strong>
-                </span>
-                <span className="font-mono font-bold text-amber-700 dark:text-amber-300 flex items-center gap-1">
-                  <Award size={12} /> {selectedCustomer.coinsBalance.toLocaleString('en-IN')} pts (₹{selectedCustomer.coinsBalance})
-                </span>
-              </div>
+              {selectedCustomer.coinsBalance > 0 && (
+                <button
+                  onClick={() => onToggleRedeemCoins(!redeemCoins)}
+                  className={`px-2 py-1 rounded-lg text-[11px] font-bold transition-all ${
+                    redeemCoins
+                      ? 'bg-primary text-primary-foreground shadow-xs'
+                      : 'bg-secondary text-foreground hover:bg-muted'
+                  }`}
+                >
+                  {redeemCoins ? 'Coins Applied' : 'Use Coins'}
+                </button>
+              )}
             </div>
           ) : (
-            <div className="p-2 rounded-xl bg-muted/60 text-[10px] text-muted-foreground text-center">
-              Enter phone & name (or press Ctrl+B) to attach WhatsApp pass & credit 5% cashback.
+            <div className="text-[10px] text-muted-foreground bg-muted/40 p-2 rounded-xl border border-border/60 text-center">
+              Guest Shopper selected • +5% Reward Coins will auto-credit upon receipt
             </div>
           )}
         </div>
 
-        {/* Itemized Cart List */}
-        <div className="flex-1 overflow-y-auto py-3 space-y-2.5">
-          <div className="flex items-center justify-between text-xs font-bold text-muted-foreground">
-            <span>Cart Items ({cart.reduce((s, i) => s + i.quantity, 0)})</span>
-            {cart.length > 0 && (
-              <button onClick={onClearCart} className="text-[10px] text-destructive hover:underline cursor-pointer">
-                Clear All
-              </button>
-            )}
-          </div>
-
+        {/* CART ITEMS LIST */}
+        <div className="flex-1 overflow-y-auto space-y-1.5 pr-1 min-h-[90px]">
           {cart.length === 0 ? (
-            <div className="h-40 flex flex-col items-center justify-center text-center text-muted-foreground space-y-2">
-              <ShoppingBag size={32} className="opacity-30" />
-              <p className="text-xs">No items in cart.</p>
-              <p className="text-[11px] opacity-75">Tap any garment on the left register grid.</p>
+            <div className="h-full flex flex-col items-center justify-center text-center p-4 text-muted-foreground space-y-1.5">
+              <ShoppingBag size={28} className="text-muted-foreground/50" />
+              <p className="text-xs font-medium">Cart is empty</p>
+              <p className="text-[10px] opacity-70">Click items on the matrix to add to checkout cart</p>
             </div>
           ) : (
             cart.map((item) => (
-              <div key={item.id} className="bg-secondary/40 p-2.5 rounded-xl border border-border flex items-center justify-between gap-2">
-                <div className="space-y-0.5 flex-1 min-w-0">
-                  <p className="font-bold text-xs text-foreground truncate">{item.product.name}</p>
-                  <p className="text-[10px] text-muted-foreground">
-                    Size: <span className="font-bold text-foreground">{item.variant.size}</span> &bull; {item.variant.color}
-                  </p>
-                  <p className="font-mono text-xs font-bold text-primary">
-                    ₹{(item.product.price * item.quantity).toLocaleString('en-IN')}
-                  </p>
+              <div
+                key={item.id}
+                className="p-2.5 rounded-xl bg-background border border-border/80 flex items-center justify-between gap-2 text-xs"
+              >
+                <div className="min-w-0 flex-1">
+                  <div className="font-bold text-foreground truncate">{item.product.name}</div>
+                  <div className="text-[10px] text-muted-foreground font-mono">
+                    {item.variant.color} / {item.variant.size}
+                  </div>
+                  <div className="font-mono text-xs font-bold text-primary mt-0.5">
+                    ₹{item.product.price.toLocaleString('en-IN')}
+                  </div>
                 </div>
 
-                {/* Quantity Controls */}
                 <div className="flex items-center gap-1.5 shrink-0">
-                  <button
-                    onClick={() => onUpdateQuantity(item.id, -1)}
-                    className="p-1 bg-card border border-border rounded-lg text-foreground hover:bg-muted cursor-pointer"
-                  >
-                    <Minus size={12} />
-                  </button>
-                  <span className="font-mono text-xs font-bold w-5 text-center">{item.quantity}</span>
-                  <button
-                    onClick={() => onUpdateQuantity(item.id, 1)}
-                    className="p-1 bg-card border border-border rounded-lg text-foreground hover:bg-muted cursor-pointer"
-                  >
-                    <Plus size={12} />
-                  </button>
+                  <div className="flex items-center gap-1 border border-border rounded-xl p-0.5 bg-card">
+                    <button
+                      onClick={() => onUpdateQuantity(item.id, -1)}
+                      className="p-1 hover:bg-muted rounded-lg text-muted-foreground hover:text-foreground"
+                    >
+                      <Minus size={11} />
+                    </button>
+                    <span className="font-mono font-bold px-1 text-xs">{item.quantity}</span>
+                    <button
+                      onClick={() => onUpdateQuantity(item.id, 1)}
+                      className="p-1 hover:bg-muted rounded-lg text-muted-foreground hover:text-foreground"
+                    >
+                      <Plus size={11} />
+                    </button>
+                  </div>
+
                   <button
                     onClick={() => onRemoveFromCart(item.id)}
-                    className="p-1 text-muted-foreground hover:text-destructive ml-1 cursor-pointer"
+                    className="p-1 text-muted-foreground hover:text-destructive rounded-lg hover:bg-destructive/10"
                   >
                     <Trash2 size={13} />
                   </button>
@@ -703,190 +540,356 @@ export const POSView: React.FC<POSViewProps> = ({
           )}
         </div>
 
-        {/* Totals & WhatsApp Receipt Dispatch Action */}
-        <div className="pt-3 border-t border-border space-y-3">
+        {/* FINANCIAL BILL SUMMARY & CHECKOUT BUTTON */}
+        <div className="space-y-2.5 border-t border-border/60 pt-2.5 shrink-0">
           
-          {/* Loyalty Points Redemption Checkbox */}
-          {selectedCustomer && selectedCustomer.coinsBalance > 0 && cart.length > 0 && (
-            <label className="flex items-center justify-between p-2 rounded-xl bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 text-xs cursor-pointer">
-              <span className="flex items-center gap-2 text-amber-900 dark:text-amber-200 font-semibold">
-                <input
-                  type="checkbox"
-                  checked={redeemCoins}
-                  onChange={(e) => onToggleRedeemCoins(e.target.checked)}
-                  className="rounded text-primary focus:ring-primary"
-                />
-                Redeem Loyalty Coins
-              </span>
-              <span className="font-mono font-bold text-amber-700 dark:text-amber-300">
-                -₹{discount.toLocaleString('en-IN')}
-              </span>
-            </label>
-          )}
-
-          {/* Subtotal / Tax / Total Breakdown */}
-          <div className="space-y-1 text-xs">
-            <div className="flex justify-between text-muted-foreground">
-              <span>Subtotal:</span>
-              <span className="font-mono font-semibold">₹{subtotal.toLocaleString('en-IN')}</span>
-            </div>
-            {discount > 0 && (
-              <div className="flex justify-between text-emerald-600 font-medium">
-                <span>Loyalty Coins Discount:</span>
-                <span className="font-mono font-semibold">-₹{discount.toLocaleString('en-IN')}</span>
+          {/* OPTIONAL DISCOUNT PERCENTAGE (%) INPUT BAR */}
+          <div className="p-2 rounded-xl bg-muted/40 border border-border/80 space-y-1.5">
+            <div className="flex items-center justify-between">
+              <label className="text-[11px] font-bold text-foreground flex items-center gap-1">
+                <Percent size={12} className="text-primary" /> Optional Discount %
+              </label>
+              
+              {/* Quick Preset Pills */}
+              <div className="flex items-center gap-1 text-[10px]">
+                {['5', '10', '15', '20'].map((p) => (
+                  <button
+                    key={p}
+                    onClick={() => setDiscountPercent(discountPercent === p ? '' : p)}
+                    className={`px-1.5 py-0.5 rounded font-mono font-bold transition-all ${
+                      discountPercent === p
+                        ? 'bg-primary text-primary-foreground'
+                        : 'bg-background hover:bg-muted text-muted-foreground border border-border/60'
+                    }`}
+                  >
+                    {p}%
+                  </button>
+                ))}
               </div>
-            )}
-            <div className="flex justify-between text-muted-foreground">
-              <span>GST Tax (5%):</span>
-              <span className="font-mono font-semibold">₹{tax.toLocaleString('en-IN')}</span>
             </div>
-            <div className="flex justify-between text-sm font-bold text-foreground pt-1.5 border-t border-border">
-              <span>Grand Total:</span>
-              <span className="font-mono text-primary text-base">₹{grandTotal.toLocaleString('en-IN')}</span>
+
+            <div className="relative">
+              <input
+                type="number"
+                min="0"
+                max="100"
+                placeholder="Enter discount % (e.g. 10)..."
+                value={discountPercent}
+                onChange={(e) => setDiscountPercent(e.target.value)}
+                className="w-full pl-3 pr-7 py-1 text-xs bg-background border border-border rounded-lg font-mono font-bold focus:outline-none focus:ring-1 focus:ring-primary"
+              />
+              <span className="absolute right-2.5 top-1/2 -translate-y-1/2 text-xs font-bold text-muted-foreground">%</span>
             </div>
           </div>
 
-          {/* Success Notification Alert */}
-          {checkoutSuccessMsg && (
-            <div className="p-2.5 bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-200 text-xs font-bold rounded-xl text-center flex items-center justify-center gap-1.5 animate-pulse-live">
-              <CheckCircle2 size={16} /> {checkoutSuccessMsg}
+          <div className="space-y-1 text-xs font-mono">
+            <div className="flex justify-between text-muted-foreground">
+              <span>Subtotal ({cart.reduce((s, i) => s + i.quantity, 0)} items)</span>
+              <span>₹{subtotal.toLocaleString('en-IN')}</span>
             </div>
-          )}
 
-          {/* Primary Action Button */}
-          <button
-            onClick={handleCheckoutSubmit}
-            disabled={cart.length === 0 || isProcessingCheckout}
-            className="w-full py-3 bg-primary text-primary-foreground font-bold text-xs sm:text-sm rounded-xl shadow-md hover:shadow-primary/20 hover:opacity-95 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2 cursor-pointer"
-          >
-            {isProcessingCheckout ? (
-              <span>Creating Bill & Sending Receipt...</span>
-            ) : (
-              <>
-                <Send size={16} /> Complete Bill & Send Receipt to Customer
-              </>
+            {manualPercentDiscount > 0 && (
+              <div className="flex justify-between text-primary font-bold">
+                <span>Manual Discount ({discountPercent}%)</span>
+                <span>- ₹{manualPercentDiscount.toLocaleString('en-IN')}</span>
+              </div>
             )}
+
+            {coinDiscount > 0 && (
+              <div className="flex justify-between text-primary font-bold">
+                <span>VIP Coin Discount</span>
+                <span>- ₹{coinDiscount.toLocaleString('en-IN')}</span>
+              </div>
+            )}
+
+            <div className="flex justify-between text-muted-foreground">
+              <span>GST Tax (5%)</span>
+              <span>₹{tax.toLocaleString('en-IN')}</span>
+            </div>
+
+            <div className="flex justify-between text-sm font-extrabold text-foreground pt-1.5 border-t border-border">
+              <span>Grand Total</span>
+              <span className="text-primary font-mono">₹{grandTotal.toLocaleString('en-IN')}</span>
+            </div>
+          </div>
+
+          <button
+            onClick={() => {
+              if (cart.length > 0) {
+                setShowPaymentModal(true);
+              }
+            }}
+            disabled={cart.length === 0}
+            className="w-full py-3 rounded-xl bg-primary text-primary-foreground font-bold text-xs hover:opacity-90 transition-all shadow-md flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+          >
+            <Send size={15} />
+            <span>Process Bill & Dispatch WhatsApp</span>
           </button>
+
         </div>
 
       </div>
 
-      {/* VARIANT SELECTOR TOUCH MODAL */}
+      </div>
+
+      {/* ITEM VARIANT SIZE SELECTOR MODAL */}
       <AnimatePresence>
         {activeModalProduct && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs">
+          <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
             <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.95 }}
-              className="bg-card w-full max-w-lg rounded-2xl p-6 border border-border shadow-2xl space-y-6"
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              className="bg-card border border-border w-full max-w-lg rounded-3xl p-6 shadow-2xl space-y-6 relative"
             >
-              {/* Header */}
-              <div className="flex items-start justify-between">
-                <div>
-                  <h3 className="font-bold text-lg text-foreground">{activeModalProduct.name}</h3>
-                  <p className="text-xs text-muted-foreground">{activeModalProduct.description}</p>
-                </div>
-                <button
-                  onClick={() => setActiveModalProduct(null)}
-                  className="p-1 rounded-lg hover:bg-secondary text-muted-foreground cursor-pointer"
-                >
-                  <X size={20} />
-                </button>
+              <button
+                onClick={() => setActiveModalProduct(null)}
+                className="absolute top-4 right-4 p-2 text-muted-foreground hover:text-foreground rounded-full hover:bg-secondary transition-colors"
+              >
+                <X size={18} />
+              </button>
+
+              <div className="space-y-1">
+                <span className="text-xs uppercase font-bold text-primary">{activeModalProduct.category}</span>
+                <h3 className="text-xl font-extrabold text-foreground">{activeModalProduct.name}</h3>
               </div>
 
-              {/* Color Selector */}
+              {/* Color Swatch Selector */}
               <div className="space-y-2">
-                <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
-                  1. Select Color
-                </label>
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-                  {activeModalProduct.swatches.map((swatch) => {
-                    const isSelected = selectedColor === swatch.name;
-                    return (
-                      <button
-                        key={swatch.name}
-                        onClick={() => setSelectedColor(swatch.name)}
-                        className={`p-2.5 rounded-xl border text-xs font-bold flex items-center gap-2 transition-all cursor-pointer ${
-                          isSelected
-                            ? 'border-primary bg-primary/10 text-primary shadow-xs'
-                            : 'border-border bg-secondary hover:bg-muted text-foreground'
-                        }`}
-                      >
-                        <span
-                          className="w-4 h-4 rounded-full border border-black/20"
-                          style={{ backgroundColor: swatch.hex }}
-                        />
-                        {swatch.name}
-                      </button>
-                    );
-                  })}
+                <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">1. Color Swatch</label>
+                <div className="grid grid-cols-3 gap-2">
+                  {activeModalProduct.swatches.map((swatch) => (
+                    <button
+                      key={swatch.name}
+                      onClick={() => setSelectedColor(swatch.name)}
+                      className={`p-2.5 rounded-xl border text-xs font-bold flex items-center gap-2 ${
+                        selectedColor === swatch.name
+                          ? 'border-primary bg-primary/10 text-primary'
+                          : 'border-border bg-secondary hover:bg-muted text-foreground'
+                      }`}
+                    >
+                      <span className="w-4 h-4 rounded-full border border-black/20" style={{ backgroundColor: swatch.hex }} />
+                      {swatch.name}
+                    </button>
+                  ))}
                 </div>
               </div>
 
               {/* Size Selector Matrix */}
               <div className="space-y-2">
-                <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
-                  2. Select Size
-                </label>
+                <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">2. Apparel Size</label>
                 <div className="grid grid-cols-4 gap-2">
                   {activeModalProduct.variants
                     .filter(v => v.color === selectedColor)
-                    .map((variant) => {
-                      const isSelected = selectedSize === variant.size;
-                      return (
-                        <button
-                          key={variant.id}
-                          onClick={() => setSelectedSize(variant.size)}
-                          className={`py-3 rounded-xl border text-sm font-extrabold flex flex-col items-center justify-center transition-all cursor-pointer ${
-                            isSelected
-                              ? 'border-primary bg-primary text-primary-foreground shadow-md'
-                              : 'border-border bg-secondary hover:bg-muted text-foreground'
-                          }`}
-                        >
-                          <span>{variant.size}</span>
-                          <span className="text-[10px] font-normal opacity-80">
-                            {variant.stock} left
-                          </span>
-                        </button>
-                      );
-                    })}
+                    .map((variant) => (
+                      <button
+                        key={variant.id}
+                        onClick={() => setSelectedSize(variant.size)}
+                        className={`py-3 rounded-xl border text-sm font-extrabold flex flex-col items-center justify-center ${
+                          selectedSize === variant.size
+                            ? 'border-primary bg-primary text-primary-foreground shadow-md'
+                            : 'border-border bg-secondary hover:bg-muted text-foreground'
+                        }`}
+                      >
+                        <span>{variant.size}</span>
+                        <span className="text-[10px] font-normal opacity-80">{variant.stock} left</span>
+                      </button>
+                    ))}
                 </div>
               </div>
 
-              {/* Footer Action */}
               <div className="flex items-center justify-between pt-4 border-t border-border">
-                <div>
-                  <span className="text-xs text-muted-foreground block">Price per item</span>
-                  <span className="font-mono text-xl font-bold text-primary">
-                    ₹{activeModalProduct.price.toLocaleString('en-IN')}
-                  </span>
-                </div>
-
-                <div className="flex items-center gap-3">
-                  <button
-                    onClick={() => setActiveModalProduct(null)}
-                    className="px-4 py-2.5 rounded-xl border border-border text-xs font-semibold hover:bg-secondary cursor-pointer"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    onClick={handleConfirmAddToCart}
-                    className="px-6 py-2.5 bg-primary text-primary-foreground text-xs font-bold rounded-xl shadow-md hover:opacity-90 transition-opacity cursor-pointer"
-                  >
-                    Add to Cart &rarr;
-                  </button>
-                </div>
+                <div className="font-mono text-xl font-extrabold text-primary">₹{activeModalProduct.price.toLocaleString('en-IN')}</div>
+                <button
+                  onClick={handleConfirmAddToCart}
+                  className="px-6 py-2.5 bg-primary text-primary-foreground font-bold rounded-xl shadow-md hover:opacity-90"
+                >
+                  Add to Cart
+                </button>
               </div>
             </motion.div>
           </div>
         )}
       </AnimatePresence>
 
-      {/* ADD CUSTOM GARMENT / CLOTH MODAL */}
+      {/* 3D PAYMENT METHOD MODAL */}
+      <AnimatePresence>
+        {showPaymentModal && (
+          <div className="fixed inset-0 z-50 bg-background/80 backdrop-blur-md flex items-center justify-center p-4">
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              className="bg-card border border-border w-full max-w-md rounded-3xl p-6 shadow-2xl relative space-y-6"
+            >
+              <button
+                onClick={() => setShowPaymentModal(false)}
+                className="absolute top-4 right-4 p-2 text-muted-foreground hover:text-foreground rounded-full hover:bg-secondary"
+              >
+                <X size={18} />
+              </button>
+
+              <div className="space-y-1">
+                <h3 className="text-xl font-extrabold text-foreground">Select Payment Mode</h3>
+                <p className="text-xs text-muted-foreground">Total Bill Amount: <span className="font-mono font-bold text-primary">₹{grandTotal.toLocaleString('en-IN')}</span></p>
+              </div>
+
+              {/* PAYMENT MODES SELECTOR */}
+              <div className="grid grid-cols-3 gap-3">
+                <button
+                  onClick={() => setPaymentMethod('upi')}
+                  className={`p-3 rounded-2xl border text-xs font-bold flex flex-col items-center gap-2 transition-all ${
+                    paymentMethod === 'upi'
+                      ? 'border-primary bg-primary/10 text-primary shadow-sm'
+                      : 'border-border bg-background hover:bg-muted text-foreground'
+                  }`}
+                >
+                  <QrCode size={20} />
+                  <span>UPI QR</span>
+                </button>
+
+                <button
+                  onClick={() => setPaymentMethod('card')}
+                  className={`p-3 rounded-2xl border text-xs font-bold flex flex-col items-center gap-2 transition-all ${
+                    paymentMethod === 'card'
+                      ? 'border-primary bg-primary/10 text-primary shadow-sm'
+                      : 'border-border bg-background hover:bg-muted text-foreground'
+                  }`}
+                >
+                  <CreditCard size={20} />
+                  <span>Card POS</span>
+                </button>
+
+                <button
+                  onClick={() => setPaymentMethod('cash')}
+                  className={`p-3 rounded-2xl border text-xs font-bold flex flex-col items-center gap-2 transition-all ${
+                    paymentMethod === 'cash'
+                      ? 'border-primary bg-primary/10 text-primary shadow-sm'
+                      : 'border-border bg-background hover:bg-muted text-foreground'
+                  }`}
+                >
+                  <Banknote size={20} />
+                  <span>Cash</span>
+                </button>
+              </div>
+
+              {/* DYNAMIC PAYMENT UI DISPLAY */}
+              <div className="p-4 rounded-2xl bg-muted/40 border border-border/80 text-center">
+                {paymentMethod === 'upi' && (
+                  <div className="space-y-3">
+                    <div className="w-36 h-36 mx-auto bg-white p-2 rounded-xl border border-border shadow-md flex items-center justify-center">
+                      <QrCode size={120} className="text-slate-900" />
+                    </div>
+                    <div className="text-xs font-mono text-muted-foreground">Scan QR with GPay, PhonePe or Paytm</div>
+                  </div>
+                )}
+
+                {paymentMethod === 'card' && (
+                  <div className="space-y-3 py-4">
+                    <CreditCard size={48} className="mx-auto text-primary animate-pulse" />
+                    <div className="text-xs font-bold text-foreground">Tap or Insert Card on POS Terminal</div>
+                  </div>
+                )}
+
+                {paymentMethod === 'cash' && (
+                  <div className="space-y-3 text-left">
+                    <label className="text-xs font-bold text-foreground">Cash Given by Shopper (₹)</label>
+                    <input
+                      type="number"
+                      placeholder="e.g. 5000"
+                      value={cashTendered}
+                      onChange={(e) => setCashTendered(e.target.value)}
+                      className="w-full p-3 bg-input border border-border rounded-xl text-sm font-mono font-bold"
+                    />
+                    {parseFloat(cashTendered) >= grandTotal && (
+                      <div className="p-2.5 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-600 font-mono text-xs font-bold flex justify-between">
+                        <span>Return Change to Customer:</span>
+                        <span>₹{(parseFloat(cashTendered) - grandTotal).toLocaleString('en-IN')}</span>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+
+              <button
+                onClick={handleCheckoutSubmit}
+                disabled={isProcessingCheckout}
+                className="w-full py-3.5 rounded-2xl bg-primary text-primary-foreground font-bold text-sm hover:opacity-90 shadow-lg flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+              >
+                {isProcessingCheckout ? (
+                  <span>Processing & Dispatching...</span>
+                ) : (
+                  <>
+                    <Send size={16} />
+                    <span>Confirm Payment & Dispatch WhatsApp Bill</span>
+                  </>
+                )}
+              </button>
+
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* WHATSAPP BILL DISPATCH CONFIRMATION POPUP */}
+      <AnimatePresence>
+        {dispatchedInvoice && (
+          <div className="fixed inset-0 z-50 bg-background/80 backdrop-blur-md flex items-center justify-center p-4">
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              className="bg-card border border-border w-full max-w-md rounded-3xl p-6 shadow-2xl relative space-y-5 text-foreground"
+            >
+              <button
+                onClick={() => setDispatchedInvoice(null)}
+                className="absolute top-4 right-4 p-2 text-muted-foreground hover:text-foreground rounded-full hover:bg-secondary"
+              >
+                <X size={18} />
+              </button>
+
+              <div className="text-center space-y-2">
+                <div className="w-12 h-12 rounded-2xl bg-emerald-500/10 text-emerald-600 border border-emerald-500/30 flex items-center justify-center mx-auto">
+                  <CheckCircle2 size={24} />
+                </div>
+                <h3 className="text-xl font-extrabold">Bill Sent to WhatsApp!</h3>
+                <p className="text-xs text-muted-foreground">Receipt delivered to <span className="font-bold text-foreground">{dispatchedInvoice.customer.name}</span> ({dispatchedInvoice.customer.phone})</p>
+              </div>
+
+              <div className="p-4 rounded-2xl bg-background border border-border space-y-3 font-mono text-xs">
+                <div className="flex justify-between border-b border-border pb-2 text-muted-foreground">
+                  <span>Invoice ID:</span>
+                  <span className="font-bold text-foreground">{dispatchedInvoice.invoice.id}</span>
+                </div>
+                
+                <div className="flex justify-between text-muted-foreground">
+                  <span>Total Amount Paid:</span>
+                  <span className="font-bold text-primary">₹{dispatchedInvoice.invoice.total.toLocaleString('en-IN')}</span>
+                </div>
+
+                <div className="flex justify-between text-emerald-600 pt-1 border-t border-border">
+                  <span>Reward Coins Credited:</span>
+                  <span className="font-bold">+ {dispatchedInvoice.invoice.coinsEarned} Coins</span>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={() => setDispatchedInvoice(null)}
+                  className="flex-1 py-3 rounded-xl bg-primary text-primary-foreground font-bold text-xs hover:opacity-90"
+                >
+                  Start New Bill
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* ADD CUSTOM GARMENT MODAL */}
       <AnimatePresence>
         {showCustomModal && (
-          <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
             <motion.div
               initial={{ scale: 0.95, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
@@ -895,7 +898,7 @@ export const POSView: React.FC<POSViewProps> = ({
             >
               <button
                 onClick={() => setShowCustomModal(false)}
-                className="absolute top-4 right-4 p-2 text-muted-foreground hover:text-foreground rounded-full hover:bg-secondary transition-colors cursor-pointer"
+                className="absolute top-4 right-4 p-2 text-muted-foreground hover:text-foreground rounded-full hover:bg-secondary cursor-pointer"
               >
                 <X size={18} />
               </button>
@@ -925,7 +928,7 @@ export const POSView: React.FC<POSViewProps> = ({
                     <label className="font-bold text-foreground">Category</label>
                     <select
                       value={customCategory}
-                      onChange={(e) => setCustomCategory(e.target.value as any)}
+                      onChange={(e) => setCustomCategory(e.target.value as 'Shirts' | 'Trousers' | 'Denim' | 'Jackets' | 'Knits')}
                       className="w-full p-2.5 bg-input border border-border rounded-xl font-medium focus:outline-none focus:ring-2 focus:ring-ring"
                     >
                       <option value="Shirts">Shirts</option>
@@ -950,43 +953,19 @@ export const POSView: React.FC<POSViewProps> = ({
                   </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="space-y-1.5">
-                    <label className="font-bold text-foreground">Size / Fit</label>
-                    <input
-                      type="text"
-                      placeholder="e.g. Free Size / Size 34"
-                      value={customSize}
-                      onChange={(e) => setCustomSize(e.target.value)}
-                      className="w-full p-2.5 bg-input border border-border rounded-xl font-medium focus:outline-none focus:ring-2 focus:ring-ring"
-                    />
-                  </div>
-
-                  <div className="space-y-1.5">
-                    <label className="font-bold text-foreground">Color / Fabric</label>
-                    <input
-                      type="text"
-                      placeholder="e.g. Navy Blue / Linen"
-                      value={customColor}
-                      onChange={(e) => setCustomColor(e.target.value)}
-                      className="w-full p-2.5 bg-input border border-border rounded-xl font-medium focus:outline-none focus:ring-2 focus:ring-ring"
-                    />
-                  </div>
-                </div>
-
-                <div className="flex justify-end gap-2 pt-2">
+                <div className="flex justify-end gap-3 pt-2">
                   <button
                     type="button"
                     onClick={() => setShowCustomModal(false)}
-                    className="px-4 py-2.5 bg-secondary text-secondary-foreground font-bold rounded-xl cursor-pointer"
+                    className="px-4 py-2 rounded-xl border border-border font-semibold hover:bg-secondary"
                   >
                     Cancel
                   </button>
                   <button
                     type="submit"
-                    className="px-6 py-2.5 bg-primary text-primary-foreground font-extrabold rounded-xl shadow-md hover:opacity-90 cursor-pointer flex items-center gap-1.5"
+                    className="px-6 py-2 rounded-xl bg-primary text-primary-foreground font-bold shadow-md hover:opacity-90"
                   >
-                    <Plus size={16} /> Add to Cart
+                    Add to Cart
                   </button>
                 </div>
               </form>
@@ -994,6 +973,7 @@ export const POSView: React.FC<POSViewProps> = ({
           </div>
         )}
       </AnimatePresence>
+
     </div>
   );
 };
