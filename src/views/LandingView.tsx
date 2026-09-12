@@ -173,7 +173,7 @@ export const LandingView: React.FC<LandingViewProps> = ({
         <h1 ref={heroHeadingRef} className="text-4xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight max-w-5xl leading-[1.1] text-foreground mb-6">
           The Operating System Built for <br className="hidden sm:inline" />
           <span className="bg-gradient-to-r from-primary via-amber-500 to-teal-600 bg-clip-text text-transparent">
-            Multi-Billion Dollar Fashion Brands
+            Clothing & Apparel Stores
           </span>
         </h1>
 

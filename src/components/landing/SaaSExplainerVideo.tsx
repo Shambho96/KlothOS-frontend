@@ -5,7 +5,6 @@ import {
   Play, 
   Pause, 
   RotateCcw, 
-  Sparkles, 
   Barcode, 
   CheckCircle2, 
   Zap, 
@@ -18,35 +17,31 @@ import {
 const CHAPTERS = [
   {
     id: 1,
-    time: '00:00 - 00:05',
-    title: '1. Lightning POS Billing',
-    subtitle: 'Scan barcodes & process offline/online sales in < 0.8 seconds',
+    time: 'Module 01',
+    title: '1. Fast Apparel POS Billing',
+    subtitle: 'Scan barcodes, pick sizes (S, M, L, XL) & complete checkouts in seconds',
     icon: Barcode,
-    accent: 'from-amber-500 to-orange-600',
   },
   {
     id: 2,
-    time: '00:05 - 00:10',
-    title: '2. WhatsApp Paperless Bill',
-    subtitle: 'Zero paper costs. Bills & reward points delivered directly on WhatsApp',
+    time: 'Module 02',
+    title: '2. WhatsApp Paperless Bills',
+    subtitle: 'Send instant PDF tax invoices & reward points directly to customer WhatsApp',
     icon: MessageSquare,
-    accent: 'from-emerald-500 to-teal-600',
   },
   {
     id: 3,
-    time: '00:10 - 00:15',
-    title: '3. AI Deadstock Liquidator',
-    subtitle: 'Identify slow-moving sizes & launch instant clearance campaigns',
+    time: 'Module 03',
+    title: '3. Deadstock Size Radar',
+    subtitle: 'Identify slow-moving apparel sizes & launch targeted WhatsApp clearance deals',
     icon: BarChart3,
-    accent: 'from-blue-500 to-indigo-600',
   },
   {
     id: 4,
-    time: '00:15 - 00:20',
-    title: '4. Automated VIP Loyalty',
-    subtitle: 'Automate tier upgrades & turn one-time shoppers into repeat VIPs',
+    time: 'Module 04',
+    title: '4. VIP Loyalty & CRM',
+    subtitle: 'Track customer lifetime spend, manage Silver/Gold/Black VIP tiers & coins',
     icon: Award,
-    accent: 'from-purple-500 to-pink-600',
   },
 ];
 
@@ -133,22 +128,22 @@ export const SaaSExplainerVideo: React.FC = () => {
           <div>
             <div className="flex items-center gap-2">
               <h3 className="font-semibold text-foreground text-sm tracking-wide">
-                PRODUCT DEMO & ARCHITECTURE
+                KLOTHOS SAAS MODULE DEMO
               </h3>
               <span className="px-2 py-0.5 rounded-full text-[10px] font-mono uppercase tracking-wider bg-primary/10 text-primary border border-primary/20">
-                Live Interactive Animation
+                Interactive Preview
               </span>
             </div>
             <p className="text-xs text-muted-foreground">
-              See how KlothOS transforms apparel retail operations end-to-end
+              4 Core modules matching the exact KlothOS store theme
             </p>
           </div>
         </div>
 
         {/* TIME CODE DISPLAY & PLAYBACK CONTROLS */}
         <div className="flex items-center gap-3">
-          <span className="font-mono text-xs text-muted-foreground bg-background/80 px-3 py-1.5 rounded-lg border border-border/60">
-            00:{Math.floor((progress / 100) * 20).toString().padStart(2, '0')} / 00:20
+          <span className="font-mono text-xs text-muted-foreground bg-background px-3 py-1.5 rounded-lg border border-border/80">
+            Module {activeChapter + 1} of 4
           </span>
 
           <button
@@ -169,24 +164,23 @@ export const SaaSExplainerVideo: React.FC = () => {
         </div>
       </div>
 
-      {/* MAIN VIDEO STAGE AREA */}
-      <div className="relative aspect-[16/9] min-h-[380px] sm:min-h-[460px] bg-slate-950 text-white overflow-hidden flex flex-col justify-between p-6 sm:p-10">
+      {/* MAIN VIDEO STAGE AREA - MATCHING KLOTHOS APP THEME */}
+      <div className="relative aspect-[16/9] min-h-[380px] sm:min-h-[460px] bg-background text-foreground overflow-hidden flex flex-col justify-between p-6 sm:p-10 border-b border-border/60">
         
-        {/* AMBIENT CANVAS MESH GLOW INSIDE VIDEO */}
-        <div className="absolute inset-0 bg-gradient-to-tr from-slate-950 via-slate-900 to-slate-950" />
-        <div className="absolute -top-32 -right-32 w-96 h-96 bg-primary/20 rounded-full blur-[120px] pointer-events-none" />
-        <div className="absolute -bottom-32 -left-32 w-96 h-96 bg-teal-500/20 rounded-full blur-[120px] pointer-events-none" />
+        {/* AMBIENT BACKGROUND GLOW MATCHING PRIMARY & SECONDARY */}
+        <div className="absolute top-0 right-0 w-80 h-80 bg-primary/15 rounded-full blur-[100px] pointer-events-none" />
+        <div className="absolute bottom-0 left-0 w-80 h-80 bg-secondary/15 rounded-full blur-[100px] pointer-events-none" />
 
-        {/* SCENE HEADER (DYNAMIC ACCORDING TO CHAPTER) */}
+        {/* SCENE HEADER */}
         <div className="relative z-10 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-ping" />
-            <span className="text-xs font-mono tracking-widest uppercase text-emerald-400 font-medium">
-              KlothOS Core SaaS Engine v2.4 • Step {activeChapter + 1} of 4
+            <span className="w-2.5 h-2.5 rounded-full bg-primary animate-ping" />
+            <span className="text-xs font-mono tracking-widest uppercase text-primary font-bold">
+              KlothOS Operating System • Module {activeChapter + 1}
             </span>
           </div>
-          <span className="text-xs font-mono text-slate-400 border border-slate-800 bg-slate-900/80 px-2.5 py-1 rounded-md">
-            100% Real-Time Cloud Sync
+          <span className="text-xs font-mono text-muted-foreground border border-border bg-card px-2.5 py-1 rounded-md shadow-sm">
+            Live Store Register
           </span>
         </div>
 
@@ -202,72 +196,69 @@ export const SaaSExplainerVideo: React.FC = () => {
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -15 }}
                 transition={{ duration: 0.4 }}
-                className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center"
+                className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center text-left"
               >
                 <div ref={scannerRef} className="space-y-4">
-                  <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/20 border border-amber-500/30 text-amber-300 text-xs font-medium">
-                    <Zap className="w-3.5 h-3.5" /> High-Speed Checkout Engine
+                  <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/30 text-primary text-xs font-semibold">
+                    <Zap className="w-3.5 h-3.5" /> Apparel POS Register
                   </div>
-                  <h2 className="text-2xl sm:text-4xl font-bold tracking-tight text-white">
-                    Scan & Bill In <span className="text-amber-400">0.8 Seconds</span>
+                  <h2 className="text-2xl sm:text-4xl font-extrabold tracking-tight text-foreground">
+                    Fast Counter <span className="text-primary">Checkout & Billing</span>
                   </h2>
-                  <p className="text-slate-300 text-sm leading-relaxed">
-                    Staff scans apparel tags via hardware scanner or phone camera. Size matrix, stock levels, GST, and VIP loyalty points auto-calculate instantly.
+                  <p className="text-muted-foreground text-sm leading-relaxed">
+                    Select clothing items, pick size & color tags, apply customer loyalty coins, and calculate GST totals instantly at the store register.
                   </p>
                   
-                  <div className="flex items-center gap-4 text-xs text-slate-400 pt-2">
+                  <div className="flex flex-wrap items-center gap-4 text-xs text-muted-foreground pt-2">
                     <div className="flex items-center gap-1.5">
-                      <CheckCircle2 className="w-4 h-4 text-amber-400" /> Offline Sync
+                      <CheckCircle2 className="w-4 h-4 text-primary" /> Barcode Search
                     </div>
                     <div className="flex items-center gap-1.5">
-                      <CheckCircle2 className="w-4 h-4 text-amber-400" /> Multi-Counter Support
+                      <CheckCircle2 className="w-4 h-4 text-primary" /> Size Matrix
                     </div>
                     <div className="flex items-center gap-1.5">
-                      <CheckCircle2 className="w-4 h-4 text-amber-400" /> Auto Tax Audit
+                      <CheckCircle2 className="w-4 h-4 text-primary" /> GST Auto-Calc
                     </div>
                   </div>
                 </div>
 
                 {/* VISUAL POS SCANNER DEMO BOX */}
-                <div className="bg-slate-900/90 border border-slate-800 rounded-2xl p-5 shadow-2xl relative overflow-hidden">
-                  <div className="flex items-center justify-between border-b border-slate-800 pb-3 mb-4">
-                    <span className="text-xs font-mono text-slate-400">Terminal #01 • Bandra West Store</span>
-                    <span className="text-xs font-mono text-emerald-400 bg-emerald-950/60 px-2 py-0.5 rounded border border-emerald-800">
-                      LIVE REGISTER
+                <div className="bg-card border border-border/80 rounded-2xl p-5 shadow-xl relative overflow-hidden space-y-3">
+                  <div className="flex items-center justify-between border-b border-border/60 pb-3 mb-2">
+                    <span className="text-xs font-mono text-muted-foreground">POS Register • Bandra Store</span>
+                    <span className="text-xs font-mono text-emerald-600 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20 font-bold">
+                      LIVE CART
                     </span>
                   </div>
 
-                  <div className="space-y-3">
-                    <div className="p-3 rounded-xl bg-slate-800/80 border border-slate-700/60 flex items-center justify-between">
-                      <div>
-                        <div className="text-sm font-semibold text-slate-100">Italian Linen Blazer (Navy)</div>
-                        <div className="text-xs text-slate-400">SKU: LNN-BLZ-42 • Size: 42</div>
-                      </div>
-                      <div className="text-right">
-                        <div className="text-sm font-mono font-bold text-amber-400">₹8,990</div>
-                        <div className="text-[10px] text-emerald-400">+180 Reward Coins</div>
-                      </div>
+                  <div className="p-3 rounded-xl bg-background border border-border/80 flex items-center justify-between">
+                    <div>
+                      <div className="text-sm font-bold text-foreground">Italian Linen Shirt</div>
+                      <div className="text-xs text-muted-foreground">Size L • Color: Navy</div>
                     </div>
+                    <div className="text-right">
+                      <div className="text-sm font-mono font-bold text-primary">₹3,450</div>
+                      <div className="text-[10px] text-emerald-600 font-medium">+172 Reward Coins</div>
+                    </div>
+                  </div>
 
-                    <div className="p-3 rounded-xl bg-slate-800/80 border border-slate-700/60 flex items-center justify-between">
-                      <div>
-                        <div className="text-sm font-semibold text-slate-100">Egyptian Cotton Chino</div>
-                        <div className="text-xs text-slate-400">SKU: EGY-CHN-32 • Size: 32</div>
-                      </div>
-                      <div className="text-right">
-                        <div className="text-sm font-mono font-bold text-amber-400">₹3,450</div>
-                        <div className="text-[10px] text-emerald-400">+69 Reward Coins</div>
-                      </div>
+                  <div className="p-3 rounded-xl bg-background border border-border/80 flex items-center justify-between">
+                    <div>
+                      <div className="text-sm font-bold text-foreground">Tailored Trouser</div>
+                      <div className="text-xs text-muted-foreground">Size 32 • Sand Beige</div>
                     </div>
+                    <div className="text-right">
+                      <div className="text-sm font-mono font-bold text-primary">₹4,200</div>
+                      <div className="text-[10px] text-emerald-600 font-medium">+210 Reward Coins</div>
+                    </div>
+                  </div>
 
-                    {/* ANIMATED BARCODE SCANNING BEAM */}
-                    <div className="relative py-2 px-3 rounded-xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-between overflow-hidden">
-                      <div className="absolute inset-y-0 left-0 w-2 bg-amber-400 shadow-[0_0_15px_#f59e0b] animate-ping" />
-                      <div className="flex items-center gap-2 text-amber-300 text-xs font-mono">
-                        <Barcode className="w-4 h-4 animate-bounce" /> Scanning item... SKU: SILK-DRS-S
-                      </div>
-                      <span className="text-xs font-mono font-bold text-amber-300">₹4,200</span>
+                  {/* BARCODE ITEM SELECTION */}
+                  <div className="relative py-2.5 px-3.5 rounded-xl bg-primary/10 border border-primary/30 flex items-center justify-between overflow-hidden">
+                    <div className="flex items-center gap-2 text-primary text-xs font-mono font-bold">
+                      <Barcode className="w-4 h-4" /> Added: Raw Denim Jacket (Size XL)
                     </div>
+                    <span className="text-xs font-mono font-bold text-primary">₹5,800</span>
                   </div>
                 </div>
               </motion.div>
@@ -281,67 +272,64 @@ export const SaaSExplainerVideo: React.FC = () => {
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -15 }}
                 transition={{ duration: 0.4 }}
-                className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center"
+                className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center text-left"
               >
                 <div className="space-y-4">
-                  <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/20 border border-emerald-500/30 text-emerald-300 text-xs font-medium">
-                    <MessageSquare className="w-3.5 h-3.5" /> Instant WhatsApp Integration
+                  <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-600 text-xs font-semibold">
+                    <MessageSquare className="w-3.5 h-3.5" /> Paperless Billing
                   </div>
-                  <h2 className="text-2xl sm:text-4xl font-bold tracking-tight text-white">
-                    Send Smart Bills <span className="text-emerald-400">Directly on WhatsApp</span>
+                  <h2 className="text-2xl sm:text-4xl font-extrabold tracking-tight text-foreground">
+                    Send Digital Receipts <span className="text-emerald-600">on WhatsApp</span>
                   </h2>
-                  <p className="text-slate-300 text-sm leading-relaxed">
-                    Ditch thermal paper rolls and save up to ₹1.2 Lakhs annually per store. Customers receive branded PDF receipts, live reward points, and single-click return links.
+                  <p className="text-muted-foreground text-sm leading-relaxed">
+                    Eliminate paper invoices. Send customer receipts directly to their WhatsApp with attached PDF tax invoices and live reward coin updates.
                   </p>
 
-                  <div className="flex items-center gap-4 text-xs text-slate-400 pt-2">
+                  <div className="flex flex-wrap items-center gap-4 text-xs text-muted-foreground pt-2">
                     <div className="flex items-center gap-1.5">
-                      <CheckCircle2 className="w-4 h-4 text-emerald-400" /> Official WhatsApp API
+                      <CheckCircle2 className="w-4 h-4 text-emerald-600" /> WhatsApp Message Dispatch
                     </div>
                     <div className="flex items-center gap-1.5">
-                      <CheckCircle2 className="w-4 h-4 text-emerald-400" /> Instant PDF Download
-                    </div>
-                    <div className="flex items-center gap-1.5">
-                      <CheckCircle2 className="w-4 h-4 text-emerald-400" /> Zero Thermal Printing
+                      <CheckCircle2 className="w-4 h-4 text-emerald-600" /> Instant PDF Download
                     </div>
                   </div>
                 </div>
 
                 {/* VIRTUAL WHATSAPP PHONE DISPLAY */}
-                <div ref={phoneRef} className="max-w-sm mx-auto w-full bg-slate-900 border border-slate-750 rounded-3xl p-4 shadow-2xl relative">
-                  <div className="w-24 h-4 bg-slate-950 rounded-full mx-auto mb-3" />
+                <div ref={phoneRef} className="max-w-sm mx-auto w-full bg-card border border-border rounded-3xl p-4 shadow-xl relative text-foreground">
+                  <div className="w-20 h-3 bg-muted rounded-full mx-auto mb-3" />
                   
                   {/* CHAT HEADER */}
-                  <div className="bg-emerald-900/60 p-3 rounded-xl flex items-center gap-3 mb-3 border border-emerald-750">
+                  <div className="bg-emerald-500/10 p-3 rounded-xl flex items-center gap-3 mb-3 border border-emerald-500/20">
                     <div className="w-8 h-8 rounded-full bg-emerald-600 flex items-center justify-center font-bold text-xs text-white">
                       K
                     </div>
                     <div>
-                      <div className="text-xs font-bold text-slate-100">KlothOS Store Official</div>
-                      <div className="text-[10px] text-emerald-300">Verified Business Account</div>
+                      <div className="text-xs font-bold text-foreground">KlothOS Store Official</div>
+                      <div className="text-[10px] text-emerald-600 font-medium">Verified Business Account</div>
                     </div>
                   </div>
 
                   {/* WHATSAPP MESSAGE BUBBLE */}
                   <div className="space-y-2">
-                    <div className="bg-slate-800 p-3.5 rounded-2xl rounded-tl-none border border-slate-700 text-xs text-slate-200 space-y-2">
-                      <p className="font-semibold text-emerald-300">
-                        Hi Priya! Thank you for shopping at KlothOS Bandra 🎉
+                    <div className="bg-background p-3.5 rounded-2xl rounded-tl-none border border-border text-xs text-foreground space-y-2">
+                      <p className="font-semibold text-emerald-600">
+                        Hi Rohan! Thank you for shopping at KlothOS Store 🎉
                       </p>
-                      <p>Here is your digital tax invoice for Bill #KL-9402.</p>
+                      <p className="text-muted-foreground">Here is your digital tax receipt for Invoice #KL-9402.</p>
                       
-                      <div className="p-2.5 rounded-lg bg-slate-900/90 border border-slate-700 flex items-center justify-between text-[11px]">
-                        <span className="font-mono text-slate-300">Invoice_KL9402.pdf</span>
-                        <span className="text-emerald-400 font-bold">124 KB</span>
+                      <div className="p-2.5 rounded-lg bg-card border border-border flex items-center justify-between text-[11px]">
+                        <span className="font-mono text-foreground">TaxInvoice_KL9402.pdf</span>
+                        <span className="text-emerald-600 font-bold">124 KB</span>
                       </div>
 
-                      <div className="pt-1 text-[11px] text-amber-300 flex items-center justify-between border-t border-slate-700">
-                        <span>⭐ Earned Loyalty Coins:</span>
-                        <span className="font-bold text-amber-400">+249 Coins</span>
+                      <div className="pt-1 text-[11px] text-primary flex items-center justify-between border-t border-border">
+                        <span>⭐ Earned Reward Coins:</span>
+                        <span className="font-bold text-primary">+382 Coins</span>
                       </div>
                     </div>
 
-                    <div className="text-[10px] font-mono text-right text-slate-500 pr-1">
+                    <div className="text-[10px] font-mono text-right text-muted-foreground pr-1">
                       Delivered 12:44 PM • Read ✓✓
                     </div>
                   </div>
@@ -349,7 +337,7 @@ export const SaaSExplainerVideo: React.FC = () => {
               </motion.div>
             )}
 
-            {/* STAGE 3: AI DEADSTOCK LIQUIDATOR */}
+            {/* STAGE 3: DEADSTOCK SIZE RADAR */}
             {activeChapter === 2 && (
               <motion.div
                 key="stage-3"
@@ -357,65 +345,64 @@ export const SaaSExplainerVideo: React.FC = () => {
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -15 }}
                 transition={{ duration: 0.4 }}
-                className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center"
+                className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center text-left"
               >
                 <div className="space-y-4">
-                  <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/20 border border-blue-500/30 text-blue-300 text-xs font-medium">
-                    <BarChart3 className="w-3.5 h-3.5" /> Intelligence Matrix
+                  <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-secondary/10 border border-secondary/30 text-secondary text-xs font-semibold">
+                    <BarChart3 className="w-3.5 h-3.5" /> Inventory Intelligence
                   </div>
-                  <h2 className="text-2xl sm:text-4xl font-bold tracking-tight text-white">
-                    Unlock Cash Flow from <span className="text-blue-400">Deadstock Inventory</span>
+                  <h2 className="text-2xl sm:text-4xl font-extrabold tracking-tight text-foreground">
+                    Clear Deadstock <span className="text-secondary">By Apparel Size</span>
                   </h2>
-                  <p className="text-slate-300 text-sm leading-relaxed">
-                    Identify non-moving size variations (e.g. Size 38 Trousers sitting &gt; 45 days). KlothOS automatically recommends targeted discounts to specific VIP shoppers.
+                  <p className="text-muted-foreground text-sm leading-relaxed">
+                    Identify non-moving clothing sizes (e.g. Size XL sitting &gt; 30 days) and send targeted WhatsApp discount offers directly to past buyers of that size.
                   </p>
 
-                  <div className="flex items-center gap-4 text-xs text-slate-400 pt-2">
+                  <div className="flex flex-wrap items-center gap-4 text-xs text-muted-foreground pt-2">
                     <div className="flex items-center gap-1.5">
-                      <CheckCircle2 className="w-4 h-4 text-blue-400" /> Size-Level Analytics
+                      <CheckCircle2 className="w-4 h-4 text-secondary" /> Size Breakdown Matrix
                     </div>
                     <div className="flex items-center gap-1.5">
-                      <CheckCircle2 className="w-4 h-4 text-blue-400" /> Instant Clearance Campaigns
+                      <CheckCircle2 className="w-4 h-4 text-secondary" /> WhatsApp Broadcast
                     </div>
                   </div>
                 </div>
 
                 {/* GRAPHICAL CHART DEMO */}
-                <div ref={chartRef} className="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-2xl space-y-4">
+                <div ref={chartRef} className="bg-card border border-border rounded-2xl p-5 shadow-xl space-y-4">
                   <div className="flex items-center justify-between text-xs">
-                    <span className="font-semibold text-slate-200">Deadstock Liquidation Radar</span>
-                    <span className="text-blue-400 font-mono">+38% Capital Recovered</span>
+                    <span className="font-semibold text-foreground">Size Turnover Velocity</span>
+                    <span className="text-secondary font-mono font-bold">Bandra Outlet</span>
                   </div>
 
-                  <div className="h-32 flex items-end gap-3 px-2 border-b border-slate-800 pb-2">
-                    <div className="flex-1 bg-slate-800 rounded-t-lg h-[40%] relative group">
-                      <span className="absolute -top-5 left-1/2 -translate-x-1/2 text-[9px] font-mono text-slate-400">Size S</span>
+                  <div className="h-32 flex items-end gap-3 px-2 border-b border-border pb-2">
+                    <div className="flex-1 bg-muted rounded-t-lg h-[40%] relative">
+                      <span className="absolute -top-5 left-1/2 -translate-x-1/2 text-[9px] font-mono text-muted-foreground">Size S</span>
                     </div>
-                    <div className="flex-1 bg-blue-500 rounded-t-lg h-[90%] relative">
-                      <span className="absolute -top-5 left-1/2 -translate-x-1/2 text-[9px] font-mono text-blue-300 font-bold">Size M</span>
+                    <div className="flex-1 bg-secondary rounded-t-lg h-[90%] relative">
+                      <span className="absolute -top-5 left-1/2 -translate-x-1/2 text-[9px] font-mono text-secondary font-bold">Size M</span>
                     </div>
-                    <div className="flex-1 bg-slate-800 rounded-t-lg h-[65%] relative">
-                      <span className="absolute -top-5 left-1/2 -translate-x-1/2 text-[9px] font-mono text-slate-400">Size L</span>
+                    <div className="flex-1 bg-muted rounded-t-lg h-[65%] relative">
+                      <span className="absolute -top-5 left-1/2 -translate-x-1/2 text-[9px] font-mono text-muted-foreground">Size L</span>
                     </div>
-                    <div className="flex-1 bg-amber-500 rounded-t-lg h-[25%] relative animate-pulse">
-                      <span className="absolute -top-5 left-1/2 -translate-x-1/2 text-[9px] font-mono text-amber-300 font-bold">Size XL (Alert)</span>
+                    <div className="flex-1 bg-primary rounded-t-lg h-[25%] relative animate-pulse">
+                      <span className="absolute -top-5 left-1/2 -translate-x-1/2 text-[9px] font-mono text-primary font-bold">Size XL</span>
                     </div>
                   </div>
 
-                  <div className="p-3 rounded-xl bg-blue-950/60 border border-blue-800/60 flex items-center justify-between text-xs">
-                    <div className="flex items-center gap-2 text-blue-200">
-                      <Sparkles className="w-4 h-4 text-blue-400" />
-                      <span>AI Suggestion: Launch 20% discount on Size XL to 142 past buyers</span>
+                  <div className="p-3 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-between text-xs">
+                    <div className="text-foreground">
+                      <span>Action: Launch 20% discount on Size XL to 142 past buyers</span>
                     </div>
-                    <button className="px-2.5 py-1 rounded bg-blue-600 text-white font-bold text-[11px] hover:bg-blue-500 transition-colors">
-                      Run Campaign
+                    <button className="px-3 py-1 rounded bg-primary text-primary-foreground font-bold text-[11px] hover:opacity-90 transition-opacity">
+                      Clear Deadstock
                     </button>
                   </div>
                 </div>
               </motion.div>
             )}
 
-            {/* STAGE 4: AUTOMATED VIP LOYALTY */}
+            {/* STAGE 4: VIP LOYALTY CRM */}
             {activeChapter === 3 && (
               <motion.div
                 key="stage-4"
@@ -423,60 +410,60 @@ export const SaaSExplainerVideo: React.FC = () => {
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -15 }}
                 transition={{ duration: 0.4 }}
-                className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center"
+                className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center text-left"
               >
                 <div className="space-y-4">
-                  <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-purple-500/20 border border-purple-500/30 text-purple-300 text-xs font-medium">
-                    <Award className="w-3.5 h-3.5" /> Retention Engine
+                  <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-purple-500/10 border border-purple-500/30 text-purple-600 text-xs font-semibold">
+                    <Award className="w-3.5 h-3.5" /> Customer CRM & VIP Tiers
                   </div>
-                  <h2 className="text-2xl sm:text-4xl font-bold tracking-tight text-white">
-                    Turn Walk-Ins Into <span className="text-purple-400">High-LTV VIP Customers</span>
+                  <h2 className="text-2xl sm:text-4xl font-extrabold tracking-tight text-foreground">
+                    Track Customer LTV & <span className="text-purple-600">Manage VIP Tiers</span>
                   </h2>
-                  <p className="text-slate-300 text-sm leading-relaxed">
-                    Automate tiered rewards (Silver, Gold, Black VIP). Track total lifetime value per customer and trigger automated WhatsApp greetings with exclusive previews.
+                  <p className="text-muted-foreground text-sm leading-relaxed">
+                    Track customer lifetime spend across Silver, Gold, and Black VIP tiers. View phone numbers, order ledgers, and reward coin balances.
                   </p>
 
-                  <div className="flex items-center gap-4 text-xs text-slate-400 pt-2">
+                  <div className="flex flex-wrap items-center gap-4 text-xs text-muted-foreground pt-2">
                     <div className="flex items-center gap-1.5">
-                      <CheckCircle2 className="w-4 h-4 text-purple-400" /> Automatic Tier Escalation
+                      <CheckCircle2 className="w-4 h-4 text-purple-600" /> Silver / Gold / Black Tiers
                     </div>
                     <div className="flex items-center gap-1.5">
-                      <CheckCircle2 className="w-4 h-4 text-purple-400" /> Birthday / Anniversary Triggers
+                      <CheckCircle2 className="w-4 h-4 text-purple-600" /> Reward Coins Ledger
                     </div>
                   </div>
                 </div>
 
                 {/* VIP CARD PREVIEW */}
-                <div className="bg-gradient-to-br from-slate-900 via-purple-950/40 to-slate-900 border border-purple-800/50 rounded-2xl p-6 shadow-2xl relative space-y-4">
-                  <div className="flex items-center justify-between border-b border-purple-800/40 pb-3">
+                <div className="bg-card border border-border rounded-2xl p-6 shadow-xl relative space-y-4 text-foreground">
+                  <div className="flex items-center justify-between border-b border-border pb-3">
                     <div className="flex items-center gap-2">
-                      <div className="w-8 h-8 rounded-full bg-purple-600/30 border border-purple-400/40 flex items-center justify-center text-purple-300 font-bold text-xs">
+                      <div className="w-8 h-8 rounded-full bg-purple-500/20 border border-purple-500/30 flex items-center justify-center text-purple-600 font-bold text-xs">
                         VIP
                       </div>
                       <div>
-                        <div className="text-sm font-bold text-white">Rohan Sharma</div>
-                        <div className="text-[10px] text-purple-300">Black VIP Tier Member</div>
+                        <div className="text-sm font-bold text-foreground">Rohan Sharma</div>
+                        <div className="text-[10px] text-muted-foreground">+91 98201 44820</div>
                       </div>
                     </div>
-                    <span className="px-2.5 py-1 rounded-full text-[10px] font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30">
-                      Top 1% Shopper
+                    <span className="px-2.5 py-1 rounded-full text-[10px] font-bold bg-primary/10 text-primary border border-primary/20">
+                      Black VIP Member
                     </span>
                   </div>
 
                   <div className="grid grid-cols-2 gap-3 text-xs">
-                    <div className="p-3 rounded-xl bg-slate-900/80 border border-slate-800">
-                      <div className="text-slate-400 text-[10px]">Total Lifetime Value</div>
-                      <div className="text-base font-bold text-white font-mono">₹1,42,800</div>
+                    <div className="p-3 rounded-xl bg-background border border-border">
+                      <div className="text-muted-foreground text-[10px]">Total Store Spend</div>
+                      <div className="text-base font-bold text-foreground font-mono">₹1,42,800</div>
                     </div>
-                    <div className="p-3 rounded-xl bg-slate-900/80 border border-slate-800">
-                      <div className="text-slate-400 text-[10px]">Reward Coin Balance</div>
-                      <div className="text-base font-bold text-purple-300 font-mono">2,450 Coins</div>
+                    <div className="p-3 rounded-xl bg-background border border-border">
+                      <div className="text-muted-foreground text-[10px]">Reward Coin Balance</div>
+                      <div className="text-base font-bold text-purple-600 font-mono">1,450 Coins</div>
                     </div>
                   </div>
 
-                  <div className="p-3 rounded-xl bg-purple-900/40 border border-purple-700/50 flex items-center justify-between text-xs text-purple-200">
-                    <span>⚡ Next reward unlocked in 550 coins</span>
-                    <span className="font-bold text-amber-300">₹500 Voucher</span>
+                  <div className="p-3 rounded-xl bg-purple-500/10 border border-purple-500/20 flex items-center justify-between text-xs text-foreground">
+                    <span>⚡ Redeemable at counter</span>
+                    <span className="font-bold text-primary">₹1,450 OFF</span>
                   </div>
                 </div>
               </motion.div>
@@ -486,8 +473,8 @@ export const SaaSExplainerVideo: React.FC = () => {
         </div>
 
         {/* BOTTOM TIMELINE PROGRESS BAR */}
-        <div className="relative z-10 space-y-2 pt-4 border-t border-slate-800">
-          <div className="w-full h-1.5 bg-slate-800 rounded-full overflow-hidden relative cursor-pointer"
+        <div className="relative z-10 space-y-2 pt-4 border-t border-border/60">
+          <div className="w-full h-1.5 bg-muted rounded-full overflow-hidden relative cursor-pointer"
                onClick={(e) => {
                  const rect = e.currentTarget.getBoundingClientRect();
                  const clickX = e.clientX - rect.left;
@@ -495,7 +482,7 @@ export const SaaSExplainerVideo: React.FC = () => {
                  setProgress(newProgress);
                }}>
             <div
-              className="h-full bg-gradient-to-r from-amber-500 via-emerald-500 to-purple-500 transition-all duration-100 ease-linear rounded-full"
+              className="h-full bg-gradient-to-r from-primary via-amber-500 to-teal-600 transition-all duration-100 ease-linear rounded-full"
               style={{ width: `${progress}%` }}
             />
           </div>
@@ -504,7 +491,7 @@ export const SaaSExplainerVideo: React.FC = () => {
       </div>
 
       {/* CHAPTER SELECTOR NAVIGATION BAR */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 divide-y sm:divide-y-0 sm:divide-x divide-border/60 bg-card/60">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 divide-y sm:divide-y-0 sm:divide-x divide-border/60 bg-card">
         {CHAPTERS.map((ch, idx) => {
           const Icon = ch.icon;
           const isActive = activeChapter === idx;
