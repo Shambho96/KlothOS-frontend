@@ -30,24 +30,24 @@
 }
 
 html.dark, :root.dark, .dark {
-  --background: rgb(18, 20, 24);
-  --foreground: rgb(240, 242, 245);
-  --card: rgb(28, 31, 38);
-  --card-foreground: rgb(240, 242, 245);
-  --popover: rgb(28, 31, 38);
-  --popover-foreground: rgb(240, 242, 245);
+  --background: rgb(0, 0, 0);
+  --foreground: rgb(245, 245, 245);
+  --card: rgb(12, 12, 14);
+  --card-foreground: rgb(245, 245, 245);
+  --popover: rgb(12, 12, 14);
+  --popover-foreground: rgb(245, 245, 245);
   --primary: rgb(224, 93, 56);
   --primary-foreground: rgb(255, 255, 255);
-  --secondary: rgb(36, 40, 50);
-  --secondary-foreground: rgb(200, 205, 215);
-  --muted: rgb(22, 25, 32);
-  --muted-foreground: rgb(140, 148, 162);
-  --accent: rgb(34, 48, 74);
-  --accent-foreground: rgb(180, 210, 245);
+  --secondary: rgb(20, 20, 24);
+  --secondary-foreground: rgb(215, 215, 225);
+  --muted: rgb(15, 15, 18);
+  --muted-foreground: rgb(150, 150, 160);
+  --accent: rgb(24, 32, 48);
+  --accent-foreground: rgb(200, 220, 250);
   --destructive: rgb(239, 68, 68);
   --destructive-foreground: rgb(255, 255, 255);
-  --border: rgb(45, 50, 62);
-  --input: rgb(36, 40, 50);
+  --border: rgb(32, 32, 36);
+  --input: rgb(20, 20, 24);
   --ring: rgb(224, 93, 56);
   color-scheme: dark;
 }

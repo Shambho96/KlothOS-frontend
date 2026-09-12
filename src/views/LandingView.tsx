@@ -113,7 +113,7 @@ export const LandingView: React.FC<LandingViewProps> = ({
   const totalValueAddedYearly = paperCostSavedYearly + deadStockRecoveredYearly + (checkoutHoursSavedMonthly * 12 * 350);
 
   return (
-    <div className="min-h-screen bg-background text-foreground flex flex-col font-sans selection:bg-primary selection:text-primary-foreground relative overflow-x-hidden">
+    <div className="min-h-screen bg-background text-foreground flex flex-col font-sans selection:bg-primary selection:text-primary-foreground relative overflow-x-clip">
       
       {/* 3D GSAP PARTICLES CANVAS BACKGROUND */}
       <Gsap3DCanvas className="opacity-40 dark:opacity-60" />
@@ -124,26 +124,26 @@ export const LandingView: React.FC<LandingViewProps> = ({
         <div className="absolute top-48 right-1/4 w-[500px] h-[500px] bg-teal-500/20 rounded-full blur-[170px]" />
       </div>
 
-      {/* PUBLIC NAVBAR */}
-      <nav className="sticky top-0 z-40 backdrop-blur-xl bg-background/80 border-b border-border/60 transition-colors">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+      {/* FLOATING GLASSMORPHISM PUBLIC NAVBAR */}
+      <nav className="sticky top-4 z-50 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full transition-all duration-300">
+        <div className="bg-card/75 dark:bg-card/65 backdrop-blur-2xl border border-border/80 rounded-3xl px-6 h-20 flex items-center justify-between shadow-2xl shadow-black/10 dark:shadow-black/60 transition-all">
           
           <div className="flex items-center gap-3">
             <KlothOSLogo size={40} />
           </div>
 
-          <div className="hidden md:flex items-center gap-8 text-sm font-medium text-muted-foreground">
-            <a href="#saas-video-section" className="hover:text-foreground transition-colors">Architecture</a>
-            <a href="#features" className="hover:text-foreground transition-colors">Features</a>
-            <a href="#simulator" className="hover:text-foreground transition-colors">Interactive POS</a>
-            <a href="#roi-calculator" className="hover:text-foreground transition-colors">ROI Calculator</a>
-            <a href="#testimonials" className="hover:text-foreground transition-colors">Enterprise</a>
+          <div className="hidden md:flex items-center gap-8 text-sm font-semibold text-muted-foreground">
+            <a href="#saas-video-section" className="hover:text-primary transition-colors">Architecture</a>
+            <a href="#features" className="hover:text-primary transition-colors">Features</a>
+            <a href="#simulator" className="hover:text-primary transition-colors">Interactive POS</a>
+            <a href="#roi-calculator" className="hover:text-primary transition-colors">ROI Calculator</a>
+            <a href="#testimonials" className="hover:text-primary transition-colors">Enterprise</a>
           </div>
 
           <div className="flex items-center gap-3">
             <button
               onClick={onToggleDarkMode}
-              className="p-2.5 rounded-xl border border-border/80 bg-card hover:bg-muted text-muted-foreground hover:text-foreground transition-colors"
+              className="p-2.5 rounded-2xl border border-border/80 bg-background/60 hover:bg-muted text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
               title="Toggle Theme"
             >
               {isDarkMode ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
@@ -151,7 +151,7 @@ export const LandingView: React.FC<LandingViewProps> = ({
 
             <button
               onClick={() => setShowLoginModal(true)}
-              className="px-5 py-2.5 rounded-xl bg-primary text-primary-foreground font-semibold text-sm hover:opacity-90 transition-all shadow-lg shadow-primary/20 flex items-center gap-2"
+              className="px-5 py-2.5 rounded-2xl bg-primary text-primary-foreground font-bold text-sm hover:opacity-90 transition-all shadow-lg shadow-primary/25 flex items-center gap-2 cursor-pointer"
             >
               <Lock className="w-4 h-4" />
               <span>Login to Store</span>
