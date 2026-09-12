@@ -370,14 +370,14 @@ export const POSView: React.FC<POSViewProps> = ({
   };
 
   return (
-    <div className={`grid grid-cols-1 lg:grid-cols-12 gap-6 transition-all duration-300 ${
+    <div className={`flex flex-col lg:grid lg:grid-cols-12 gap-4 lg:gap-6 transition-all duration-300 ${
       isWholeScreen 
-        ? 'fixed inset-0 z-50 bg-background p-4 sm:p-6 overflow-hidden shadow-2xl h-screen' 
-        : 'h-[calc(100vh-6rem)]'
+        ? 'fixed inset-0 z-50 bg-background p-4 sm:p-6 overflow-y-auto lg:overflow-hidden shadow-2xl min-h-screen lg:h-screen' 
+        : 'min-h-[calc(100vh-6rem)] lg:h-[calc(100vh-6rem)] overflow-y-auto lg:overflow-hidden pb-24 lg:pb-0'
     }`}>
       
       {/* LEFT SECTION (65% width): Garment Matrix & Categories */}
-      <div className="lg:col-span-8 flex flex-col justify-between space-y-4 overflow-hidden pr-1">
+      <div className="lg:col-span-8 flex flex-col space-y-4 lg:overflow-hidden pr-1">
         
         {/* Category Pills, Search & WHOLE SCREEN TOGGLE BUTTON */}
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-card p-3 rounded-2xl border border-border shadow-2xs">
@@ -520,8 +520,19 @@ export const POSView: React.FC<POSViewProps> = ({
         </div>
       </div>
 
+      {/* MOBILE STICKY VIEW CART BUTTON */}
+      <div className="lg:hidden fixed bottom-4 left-4 right-4 z-40">
+        <button
+          onClick={() => document.getElementById('cart-section')?.scrollIntoView({ behavior: 'smooth' })}
+          className="w-full py-3.5 bg-primary text-primary-foreground font-bold rounded-2xl shadow-xl flex items-center justify-between px-6 border-2 border-primary-foreground/20 active:scale-95 transition-transform"
+        >
+          <span className="flex items-center gap-2"><ShoppingBag size={18} /> View Cart</span>
+          <span>{cart.length} items | ₹{grandTotal.toLocaleString()}</span>
+        </button>
+      </div>
+
       {/* RIGHT SECTION (35% width): Cart & Customer Register */}
-      <div className="lg:col-span-4 bg-card rounded-2xl border border-border p-4 shadow-sm overflow-hidden flex flex-col justify-between">
+      <div id="cart-section" className="lg:col-span-4 bg-card rounded-2xl border border-border p-4 shadow-sm overflow-hidden flex flex-col mt-4 lg:mt-0 lg:h-full">
         
         {/* Customer Profile Header & Voice Dictation Button */}
         <div className="space-y-3 pb-3 border-b border-border">

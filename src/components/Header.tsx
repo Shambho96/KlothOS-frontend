@@ -1,5 +1,5 @@
 import React from 'react';
-import { Search, Sun, Moon } from 'lucide-react';
+import { Search, Sun, Moon, Menu } from 'lucide-react';
 import type { ViewMode } from '../types';
 
 interface HeaderProps {
@@ -8,6 +8,7 @@ interface HeaderProps {
   onSearchChange: (q: string) => void;
   isDarkMode: boolean;
   onToggleDarkMode: () => void;
+  onOpenMobileMenu: () => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -15,7 +16,8 @@ export const Header: React.FC<HeaderProps> = ({
   searchQuery,
   onSearchChange,
   isDarkMode,
-  onToggleDarkMode
+  onToggleDarkMode,
+  onOpenMobileMenu
 }) => {
   const viewTitles: Record<string, string> = {
     pos: 'Fast Billing & Garment Matrix',
@@ -27,8 +29,17 @@ export const Header: React.FC<HeaderProps> = ({
   return (
     <header className="h-16 px-6 bg-card border-b border-border flex items-center justify-between sticky top-0 z-20 shadow-xs transition-colors">
       {/* Left Title */}
-      <div className="flex items-center gap-4">
-        <h1 className="text-lg font-bold text-foreground tracking-tight">
+      <div className="flex items-center gap-3 md:gap-4">
+        {/* Hamburger Menu (Mobile Only) */}
+        <button
+          onClick={onOpenMobileMenu}
+          className="md:hidden p-2 -ml-2 rounded-xl text-foreground hover:bg-secondary transition-colors"
+          title="Open Menu"
+        >
+          <Menu size={20} />
+        </button>
+
+        <h1 className="text-base md:text-lg font-bold text-foreground tracking-tight truncate max-w-[200px] md:max-w-none">
           {viewTitles[currentView] || 'KlothOS SaaS Dashboard'}
         </h1>
       </div>

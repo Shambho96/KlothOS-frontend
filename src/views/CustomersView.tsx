@@ -188,7 +188,7 @@ export const CustomersView: React.FC<CustomersViewProps> = ({
 
       {/* TAB 1: CUSTOMER DIRECTORY VIEW */}
       {activeTab === 'directory' && (
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 h-[calc(100vh-11rem)]">
+        <div className="flex flex-col lg:grid lg:grid-cols-12 gap-6 lg:h-[calc(100vh-11rem)] h-auto">
           
           {/* LEFT SIDE (60% width): Directory Table */}
           <div className="lg:col-span-7 bg-card rounded-2xl border border-border p-5 flex flex-col justify-between space-y-4 shadow-xs overflow-hidden">
@@ -238,8 +238,8 @@ export const CustomersView: React.FC<CustomersViewProps> = ({
             </div>
 
             {/* Directory Table */}
-            <div className="flex-1 overflow-y-auto pr-1">
-              <table className="w-full text-xs text-left">
+            <div className="flex-1 overflow-x-auto overflow-y-auto pr-1">
+              <table className="w-full text-xs text-left min-w-[600px]">
                 <thead>
                   <tr className="border-b border-border text-muted-foreground font-bold uppercase tracking-wider sticky top-0 bg-card z-10">
                     <th className="py-2.5 px-3">Customer</th>
@@ -301,7 +301,7 @@ export const CustomersView: React.FC<CustomersViewProps> = ({
 
           {/* RIGHT SIDE (40% width): Customer Profile Drawer & Tier Switcher */}
           {activeCust ? (
-            <div className="lg:col-span-5 bg-card rounded-2xl border border-border p-5 flex flex-col justify-between shadow-xs overflow-y-auto space-y-6">
+            <div className="lg:col-span-5 bg-card rounded-2xl border border-border p-5 flex flex-col shadow-xs overflow-y-auto space-y-6">
               
               {/* Profile Header */}
               <div className="space-y-4 pb-4 border-b border-border">

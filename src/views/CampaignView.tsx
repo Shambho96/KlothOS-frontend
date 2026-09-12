@@ -768,7 +768,7 @@ export const CampaignView: React.FC<CampaignViewProps> = ({
               </div>
             ) : (
               <div className="overflow-x-auto">
-                <table className="w-full text-xs text-left">
+                <table className="w-full text-xs text-left min-w-[800px]">
                   <thead>
                     <tr className="border-b border-border bg-secondary/40 text-muted-foreground font-bold uppercase tracking-wider">
                       <th className="px-4 py-3">Campaign / Cohort</th>

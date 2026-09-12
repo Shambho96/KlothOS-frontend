@@ -72,6 +72,7 @@ export function App() {
   // Dashboard View State
   const [currentView, setCurrentView] = useState<ViewMode>(initialRoute.currentView);
   const [sidebarCollapsed, setSidebarCollapsed] = useState<boolean>(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState<boolean>(false);
   
   // Data State
   const [products] = useState<Product[]>(INITIAL_PRODUCTS);
@@ -118,6 +119,7 @@ export function App() {
 
   // Synchronize Browser URL on View or Auth changes
   const navigateTo = (view: ViewMode | 'landing', auth: boolean = true) => {
+    setMobileMenuOpen(false); // Close mobile menu on navigation
     if (!auth || view === 'landing') {
       setIsAuthenticated(false);
       window.history.pushState({}, '', '/');
@@ -333,6 +335,8 @@ export function App() {
         collapsed={sidebarCollapsed}
         onToggleCollapse={() => setSidebarCollapsed(!sidebarCollapsed)}
         onLogout={() => navigateTo('landing', false)}
+        mobileMenuOpen={mobileMenuOpen}
+        setMobileMenuOpen={setMobileMenuOpen}
       />
 
       {/* Main Dashboard Area */}
@@ -344,6 +348,7 @@ export function App() {
           onSearchChange={setSearchQuery}
           isDarkMode={isDarkMode}
           onToggleDarkMode={handleToggleDarkMode}
+          onOpenMobileMenu={() => setMobileMenuOpen(true)}
         />
 
         {/* View Page Body */}

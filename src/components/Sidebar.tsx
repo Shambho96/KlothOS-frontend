@@ -18,6 +18,8 @@ interface SidebarProps {
   collapsed: boolean;
   onToggleCollapse: () => void;
   onLogout: () => void;
+  mobileMenuOpen?: boolean;
+  setMobileMenuOpen?: (open: boolean) => void;
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({
@@ -25,7 +27,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
   onSelectView,
   collapsed,
   onToggleCollapse,
-  onLogout
+  onLogout,
+  mobileMenuOpen,
+  setMobileMenuOpen
 }) => {
   const [selectedStore, setSelectedStore] = useState<string>('Bandra West Flagship');
 
@@ -37,12 +41,21 @@ export const Sidebar: React.FC<SidebarProps> = ({
   ];
 
   return (
-    <aside 
-      className={`relative bg-card border-r border-border flex flex-col justify-between transition-all duration-300 z-30 ${
-        collapsed ? 'w-20' : 'w-64'
-      }`}
-    >
-      {/* Top Logo Header */}
+    <>
+      {/* Mobile Backdrop Overlay */}
+      {mobileMenuOpen && (
+        <div 
+          className="md:hidden fixed inset-0 bg-black/60 z-30 transition-opacity"
+          onClick={() => setMobileMenuOpen?.(false)}
+        />
+      )}
+
+      <aside 
+        className={`fixed md:relative top-0 bottom-0 left-0 bg-card border-r border-border flex flex-col justify-between transition-transform duration-300 z-40 ${
+          collapsed ? 'w-20' : 'w-64'
+        } ${mobileMenuOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}`}
+      >
+        {/* Top Logo Header */}
       <div>
         <div className="h-16 px-4 flex items-center justify-between border-b border-border">
           <div className="flex items-center gap-3 overflow-hidden">
@@ -165,5 +178,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
         )}
       </div>
     </aside>
+    </>
   );
 };
