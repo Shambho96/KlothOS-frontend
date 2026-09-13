@@ -197,28 +197,59 @@ export const AnalyticsView: React.FC<AnalyticsViewProps> = ({ onSelectView }) =>
         
         {/* LEFT (7 cols): Revenue Trend Chart */}
         <div className="lg:col-span-7 bg-card border border-border rounded-3xl p-6 shadow-xl space-y-6">
-          <div className="flex items-center justify-between border-b border-border/60 pb-3">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-border/60 pb-3 gap-2">
             <div>
               <h3 className="text-base font-extrabold text-foreground">Revenue & Walk-In Traffic</h3>
               <p className="text-xs text-muted-foreground">Daily store performance over past 7 days</p>
             </div>
-            <span className="text-xs font-mono text-primary font-bold">Peak: Sat (₹1.05L)</span>
+            <div className="flex items-center gap-4 text-xs font-semibold">
+              <div className="flex items-center gap-1.5">
+                <span className="w-2.5 h-2.5 rounded-full bg-primary inline-block"></span>
+                <span className="text-muted-foreground">Revenue (₹)</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <span className="w-2.5 h-2.5 rounded-full bg-sky-500 inline-block"></span>
+                <span className="text-muted-foreground">Walk-Ins</span>
+              </div>
+              <span className="text-xs font-mono text-primary font-bold hidden sm:inline ml-2">Peak: Sat (₹1.05L)</span>
+            </div>
           </div>
 
-          <div className="h-48 flex items-end justify-between gap-3 pt-6 px-2 border-b border-border pb-2">
+          <div className="h-56 flex items-stretch justify-between gap-3 pt-6 px-2 border-b border-border pb-3">
             {weeklyData.map((d) => {
-              const heightPercent = Math.round((d.revenue / maxRevenue) * 100);
+              const maxWalkins = Math.max(...weeklyData.map(w => w.walkins));
+              const revPercent = Math.max(Math.round((d.revenue / maxRevenue) * 100), 4);
+              const walkinPercent = Math.max(Math.round((d.walkins / maxWalkins) * 100), 4);
+              const conversion = Math.round((d.buyers / d.walkins) * 100);
+
               return (
-                <div key={d.day} className="flex-1 flex flex-col items-center gap-2 group relative">
-                  <div
-                    className="w-full bg-primary/80 group-hover:bg-primary rounded-t-xl transition-all relative"
-                    style={{ height: `${heightPercent}%` }}
-                  >
-                    <div className="absolute -top-7 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 bg-background border border-border px-2 py-0.5 rounded text-[10px] font-mono font-bold whitespace-nowrap shadow-md transition-opacity pointer-events-none">
-                      ₹{d.revenue.toLocaleString('en-IN')}
-                    </div>
+                <div key={d.day} className="flex-1 flex flex-col justify-end items-center gap-2 group relative h-full">
+                  {/* Tooltip on hover */}
+                  <div className="absolute -top-12 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 bg-popover text-popover-foreground border border-border px-3 py-1.5 rounded-xl text-xs font-mono font-bold whitespace-nowrap shadow-xl transition-all duration-200 pointer-events-none z-30 flex flex-col items-center gap-0.5">
+                    <span className="text-primary font-extrabold">₹{d.revenue.toLocaleString('en-IN')}</span>
+                    <span className="text-[10px] text-muted-foreground font-normal">
+                      {d.walkins} walk-ins • {d.buyers} buyers ({conversion}% conv.)
+                    </span>
                   </div>
-                  <span className="text-xs font-mono text-muted-foreground font-bold">{d.day}</span>
+
+                  {/* Dual Bar Track Container */}
+                  <div className="w-full flex-1 flex items-end justify-center gap-1.5 relative px-1">
+                    {/* Revenue Bar */}
+                    <div
+                      className="flex-1 bg-gradient-to-t from-primary/75 via-primary/90 to-primary group-hover:brightness-110 rounded-t-lg transition-all duration-300 relative shadow-xs"
+                      style={{ height: `${revPercent}%` }}
+                    />
+                    {/* Walk-in Bar */}
+                    <div
+                      className="flex-1 bg-gradient-to-t from-sky-600/70 via-sky-500/90 to-sky-400 group-hover:brightness-110 rounded-t-lg transition-all duration-300 relative shadow-xs"
+                      style={{ height: `${walkinPercent}%` }}
+                    />
+                  </div>
+
+                  {/* Day Label */}
+                  <span className="text-xs font-mono text-muted-foreground font-bold group-hover:text-foreground transition-colors">
+                    {d.day}
+                  </span>
                 </div>
               );
             })}
