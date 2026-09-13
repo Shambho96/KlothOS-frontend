@@ -4,13 +4,17 @@ import {
   TrendingUp, 
   ArrowUpRight, 
   DollarSign, 
-  Sparkles,
-  BarChart3,
+  ShoppingBag,
   Store,
   Send,
   AlertTriangle,
   CheckCircle2,
-  X
+  X,
+  CreditCard,
+  QrCode,
+  Banknote,
+  MessageSquare,
+  Zap
 } from 'lucide-react';
 import type { DeadStockItem, ViewMode } from '../types';
 
@@ -107,8 +111,8 @@ export const AnalyticsView: React.FC<AnalyticsViewProps> = ({ onSelectView }) =>
         </div>
       </div>
 
-      {/* 4 CORE KPI METRIC CARDS */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      {/* 3 CORE KPI METRIC CARDS */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         
         {/* Card 1: Total Revenue */}
         <div className="bg-card rounded-2xl p-5 border border-border shadow-xs space-y-3 hover:border-primary/40 transition-all">
@@ -150,43 +154,23 @@ export const AnalyticsView: React.FC<AnalyticsViewProps> = ({ onSelectView }) =>
           </div>
         </div>
 
-        {/* Card 3: Deadstock Recovered */}
+        {/* Card 3: Average Order Value (AOV) */}
         <div className="bg-card rounded-2xl p-5 border border-border shadow-xs space-y-3 hover:border-primary/40 transition-all">
           <div className="flex items-center justify-between text-muted-foreground">
-            <span className="text-xs font-bold uppercase tracking-wider">Deadstock Recovered</span>
+            <span className="text-xs font-bold uppercase tracking-wider">Average Order Value (AOV)</span>
             <div className="p-2.5 rounded-xl bg-blue-500/10 text-blue-600">
-              <BarChart3 size={18} />
+              <ShoppingBag size={18} />
             </div>
           </div>
           <div className="space-y-1">
-            <p className="font-mono text-2xl font-extrabold text-foreground">₹1,42,500</p>
+            <p className="font-mono text-2xl font-extrabold text-foreground">₹2,840</p>
             <div className="flex items-center gap-1.5 text-xs font-bold text-emerald-600">
               <ArrowUpRight size={14} />
-              <span>+38% Liquidation Lift</span>
+              <span>+9.4% vs last week</span>
             </div>
           </div>
           <div className="text-[10px] text-muted-foreground pt-2 border-t border-border/60">
-            Slow Sizes Cleared: <strong className="text-foreground font-mono">42 Garments</strong>
-          </div>
-        </div>
-
-        {/* Card 4: VIP Retention Rate */}
-        <div className="bg-card rounded-2xl p-5 border border-border shadow-xs space-y-3 hover:border-primary/40 transition-all">
-          <div className="flex items-center justify-between text-muted-foreground">
-            <span className="text-xs font-bold uppercase tracking-wider">VIP Customer Loyalty</span>
-            <div className="p-2.5 rounded-xl bg-purple-500/10 text-purple-600">
-              <Sparkles size={18} />
-            </div>
-          </div>
-          <div className="space-y-1">
-            <p className="font-mono text-2xl font-extrabold text-foreground">42.8%</p>
-            <div className="flex items-center gap-1.5 text-xs font-bold text-emerald-600">
-              <ArrowUpRight size={14} />
-              <span>+8.1% Repeat Shoppers</span>
-            </div>
-          </div>
-          <div className="text-[10px] text-muted-foreground pt-2 border-t border-border/60">
-            Reward Coins Issued: <strong className="text-foreground font-mono">24,350 Coins</strong>
+            Avg Units Per Basket: <strong className="text-foreground font-mono">2.4 Garments</strong>
           </div>
         </div>
 
@@ -278,6 +262,129 @@ export const AnalyticsView: React.FC<AnalyticsViewProps> = ({ onSelectView }) =>
           </div>
         </div>
 
+      </div>
+
+      {/* PAYMENT MODE BREAKDOWN & WHATSAPP RECEIPT ADOPTION */}
+      <div className="bg-card border border-border rounded-3xl p-6 shadow-xl space-y-6">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-border/60 pb-3 gap-2">
+          <div>
+            <h3 className="text-base font-extrabold text-foreground flex items-center gap-2">
+              <CreditCard size={18} className="text-primary" /> Payment Mode Breakdown & Digital Receipts
+            </h3>
+            <p className="text-xs text-muted-foreground">Distribution of billing payment channels & WhatsApp invoice adoption</p>
+          </div>
+          <div className="flex items-center gap-2 px-3 py-1 bg-emerald-500/10 border border-emerald-500/30 rounded-xl text-emerald-600 font-mono text-xs font-bold">
+            <Zap size={14} /> 84.2% WhatsApp Receipt Rate
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          
+          {/* Payment Method 1: UPI */}
+          <div className="p-4 rounded-2xl bg-background border border-border space-y-3">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <div className="p-2 rounded-xl bg-emerald-500/10 text-emerald-600">
+                  <QrCode size={18} />
+                </div>
+                <div>
+                  <h4 className="text-xs font-bold text-foreground">UPI / QR Scan</h4>
+                  <p className="text-[10px] text-muted-foreground">GPay, PhonePe, Paytm</p>
+                </div>
+              </div>
+              <span className="text-xs font-mono font-extrabold text-emerald-600 bg-emerald-500/10 px-2 py-0.5 rounded-lg">
+                58.0%
+              </span>
+            </div>
+            <div className="space-y-1 pt-1">
+              <div className="flex justify-between text-xs font-mono">
+                <span className="text-muted-foreground">Volume:</span>
+                <span className="font-bold text-foreground">₹2,82,500</span>
+              </div>
+              <div className="w-full h-2 bg-muted rounded-full overflow-hidden">
+                <div className="h-full bg-emerald-500 rounded-full" style={{ width: '58%' }} />
+              </div>
+            </div>
+          </div>
+
+          {/* Payment Method 2: Cards */}
+          <div className="p-4 rounded-2xl bg-background border border-border space-y-3">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <div className="p-2 rounded-xl bg-indigo-500/10 text-indigo-600">
+                  <CreditCard size={18} />
+                </div>
+                <div>
+                  <h4 className="text-xs font-bold text-foreground">Credit & Debit Cards</h4>
+                  <p className="text-[10px] text-muted-foreground">Visa, Mastercard, RuPay</p>
+                </div>
+              </div>
+              <span className="text-xs font-mono font-extrabold text-indigo-600 bg-indigo-500/10 px-2 py-0.5 rounded-lg">
+                28.0%
+              </span>
+            </div>
+            <div className="space-y-1 pt-1">
+              <div className="flex justify-between text-xs font-mono">
+                <span className="text-muted-foreground">Volume:</span>
+                <span className="font-bold text-foreground">₹1,36,400</span>
+              </div>
+              <div className="w-full h-2 bg-muted rounded-full overflow-hidden">
+                <div className="h-full bg-indigo-500 rounded-full" style={{ width: '28%' }} />
+              </div>
+            </div>
+          </div>
+
+          {/* Payment Method 3: Cash */}
+          <div className="p-4 rounded-2xl bg-background border border-border space-y-3">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <div className="p-2 rounded-xl bg-amber-500/10 text-amber-600">
+                  <Banknote size={18} />
+                </div>
+                <div>
+                  <h4 className="text-xs font-bold text-foreground">Store Cash</h4>
+                  <p className="text-[10px] text-muted-foreground">Physical POS Drawer</p>
+                </div>
+              </div>
+              <span className="text-xs font-mono font-extrabold text-amber-600 bg-amber-500/10 px-2 py-0.5 rounded-lg">
+                14.0%
+              </span>
+            </div>
+            <div className="space-y-1 pt-1">
+              <div className="flex justify-between text-xs font-mono">
+                <span className="text-muted-foreground">Volume:</span>
+                <span className="font-bold text-foreground">₹68,300</span>
+              </div>
+              <div className="w-full h-2 bg-muted rounded-full overflow-hidden">
+                <div className="h-full bg-amber-500 rounded-full" style={{ width: '14%' }} />
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        {/* WHATSAPP DIGITAL RECEIPT FOOTER HIGHLIGHT */}
+        <div className="p-4 rounded-2xl bg-primary/5 border border-primary/20 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs">
+          <div className="flex items-center gap-3">
+            <div className="p-2.5 rounded-xl bg-primary text-primary-foreground">
+              <MessageSquare size={18} />
+            </div>
+            <div>
+              <p className="font-bold text-foreground">WhatsApp Instant Receipt Adoption</p>
+              <p className="text-muted-foreground text-[11px]">₹3,92,400 out of ₹4.87L revenue billed directly via paperless WhatsApp PDF receipts.</p>
+            </div>
+          </div>
+          <div className="flex items-center gap-4 text-mono shrink-0">
+            <div className="text-right">
+              <span className="block text-[10px] text-muted-foreground uppercase font-bold">Paper Saved</span>
+              <span className="font-extrabold text-primary">1,240 Receipts</span>
+            </div>
+            <div className="text-right">
+              <span className="block text-[10px] text-muted-foreground uppercase font-bold">Repeat Opt-Ins</span>
+              <span className="font-extrabold text-emerald-600">92.4%</span>
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* 1-CLICK DEADSTOCK CLEARANCE MODAL */}
