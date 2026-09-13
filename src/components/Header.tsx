@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
-import { Search, Sun, Moon, Menu, Store, Keyboard, CheckCircle2, ChevronDown } from 'lucide-react';
+import { Sun, Moon, Menu, Store, CheckCircle2, ChevronDown } from 'lucide-react';
 import type { ViewMode } from '../types';
 
 interface HeaderProps {
   currentView: ViewMode;
-  searchQuery: string;
-  onSearchChange: (q: string) => void;
+  searchQuery?: string;
+  onSearchChange?: (q: string) => void;
   isDarkMode: boolean;
   onToggleDarkMode: () => void;
   onOpenMobileMenu: () => void;
@@ -13,15 +13,12 @@ interface HeaderProps {
 
 export const Header: React.FC<HeaderProps> = ({
   currentView,
-  searchQuery,
-  onSearchChange,
   isDarkMode,
   onToggleDarkMode,
   onOpenMobileMenu
 }) => {
   const [selectedOutlet, setSelectedOutlet] = useState<string>('Bandra West Flagship');
   const [showOutletDropdown, setShowOutletDropdown] = useState<boolean>(false);
-  const [showShortcutModal, setShowShortcutModal] = useState<boolean>(false);
 
   const viewTitles: Record<string, string> = {
     pos: 'Apparel POS Register & Fast Billing',
@@ -91,33 +88,8 @@ export const Header: React.FC<HeaderProps> = ({
         </div>
       </div>
 
-      {/* Center Search Bar if in POS view */}
-      {currentView === 'pos' && (
-        <div className="relative max-w-md w-full hidden md:block px-4">
-          <Search size={16} className="absolute left-7 top-1/2 -translate-y-1/2 text-muted-foreground" />
-          <input
-            type="text"
-            placeholder="Search item, size (S, M, L, XL), SKU or price..."
-            value={searchQuery}
-            onChange={(e) => onSearchChange(e.target.value)}
-            className="w-full pl-9 pr-4 py-1.5 text-xs bg-input border border-border rounded-xl focus:outline-none focus:ring-2 focus:ring-primary transition-all font-mono"
-          />
-        </div>
-      )}
-
       {/* Right Actions & Theme Toggle */}
       <div className="flex items-center gap-3">
-        
-        {/* KEYBOARD SHORTCUT HELPER BUTTON */}
-        <button
-          onClick={() => setShowShortcutModal(!showShortcutModal)}
-          className="hidden sm:flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl border border-border/80 bg-muted/40 hover:bg-muted text-xs font-mono font-medium text-muted-foreground hover:text-foreground transition-colors"
-          title="POS Keyboard Shortcuts"
-        >
-          <Keyboard size={14} className="text-primary" />
-          <span>[?] Keys</span>
-        </button>
-
         {/* Dark / Light Mode Toggle Button */}
         <button
           onClick={onToggleDarkMode}
@@ -137,40 +109,6 @@ export const Header: React.FC<HeaderProps> = ({
           )}
         </button>
       </div>
-
-      {/* SHORTCUTS MODAL POPUP */}
-      {showShortcutModal && (
-        <div className="fixed inset-0 z-50 bg-background/80 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-card border border-border rounded-2xl p-6 max-w-sm w-full shadow-2xl space-y-4">
-            <div className="flex items-center justify-between border-b border-border pb-3">
-              <h3 className="font-bold text-sm text-foreground flex items-center gap-2">
-                <Keyboard size={16} className="text-primary" /> POS Shortcuts Guide
-              </h3>
-              <button
-                onClick={() => setShowShortcutModal(false)}
-                className="text-xs text-muted-foreground hover:text-foreground font-bold"
-              >
-                Close
-              </button>
-            </div>
-            
-            <div className="space-y-2 text-xs font-mono">
-              <div className="flex justify-between items-center p-2 rounded bg-muted/40">
-                <span className="text-muted-foreground">Focus Search Bar</span>
-                <span className="bg-background border border-border px-2 py-0.5 rounded font-bold">/</span>
-              </div>
-              <div className="flex justify-between items-center p-2 rounded bg-muted/40">
-                <span className="text-muted-foreground">Process WhatsApp Bill</span>
-                <span className="bg-background border border-border px-2 py-0.5 rounded font-bold">Enter</span>
-              </div>
-              <div className="flex justify-between items-center p-2 rounded bg-muted/40">
-                <span className="text-muted-foreground">Clear Active Cart</span>
-                <span className="bg-background border border-border px-2 py-0.5 rounded font-bold">Esc</span>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
 
     </header>
   );
