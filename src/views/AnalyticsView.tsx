@@ -16,6 +16,18 @@ import {
   MessageSquare,
   Zap
 } from 'lucide-react';
+import {
+  ResponsiveContainer,
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  Tooltip,
+  CartesianGrid,
+  PieChart,
+  Pie,
+  Cell
+} from 'recharts';
 import type { DeadStockItem, ViewMode } from '../types';
 
 interface AnalyticsViewProps {
@@ -23,6 +35,46 @@ interface AnalyticsViewProps {
   onTriggerClearance?: (item: DeadStockItem) => void;
   onSelectView?: (view: ViewMode) => void;
 }
+
+const RechartsCustomTooltip = ({ active, payload, label }: any) => {
+  if (active && payload && payload.length) {
+    const data = payload[0].payload;
+    const conversion = Math.round((data.buyers / data.walkins) * 100);
+    return (
+      <div className="bg-popover text-popover-foreground border border-border p-3 rounded-2xl shadow-xl font-mono text-xs space-y-1.5 z-50">
+        <p className="font-extrabold text-foreground border-b border-border/80 pb-1">{label} Performance</p>
+        <p className="text-primary font-extrabold flex items-center justify-between gap-4">
+          <span>Revenue:</span>
+          <span>₹{data.revenue.toLocaleString('en-IN')}</span>
+        </p>
+        <p className="text-sky-600 dark:text-sky-400 font-bold flex items-center justify-between gap-4">
+          <span>Walk-Ins:</span>
+          <span>{data.walkins} visitors</span>
+        </p>
+        <p className="text-muted-foreground flex items-center justify-between gap-4 text-[11px]">
+          <span>Buyers / Conv:</span>
+          <span className="text-foreground font-semibold">{data.buyers} ({conversion}%)</span>
+        </p>
+      </div>
+    );
+  }
+  return null;
+};
+
+const CategoryCustomTooltip = ({ active, payload }: any) => {
+  if (active && payload && payload.length) {
+    const data = payload[0].payload;
+    return (
+      <div className="bg-popover text-popover-foreground border border-border p-2.5 rounded-2xl shadow-xl font-mono text-xs z-50 flex items-center gap-2">
+        <span className="w-2.5 h-2.5 rounded-full inline-block shrink-0" style={{ backgroundColor: data.hex }} />
+        <span className="font-bold text-foreground">{data.name}:</span>
+        <span className="font-extrabold text-primary">₹{data.revenue.toLocaleString('en-IN')}</span>
+        <span className="text-muted-foreground text-[11px]">({data.percentage}%)</span>
+      </div>
+    );
+  }
+  return null;
+};
 
 export const AnalyticsView: React.FC<AnalyticsViewProps> = ({ onSelectView }) => {
   const [timeframe, setTimeframe] = useState<'7d' | '30d' | 'quarter'>('7d');
@@ -41,15 +93,13 @@ export const AnalyticsView: React.FC<AnalyticsViewProps> = ({ onSelectView }) =>
     { day: 'Sun', revenue: 52300, walkins: 148, buyers: 90 },
   ];
 
-  const maxRevenue = Math.max(...weeklyData.map(d => d.revenue));
-
-  // Category Sales Breakdown
+  // Category Sales Breakdown with Hex Colors for Recharts Pie
   const categoryBreakdown = [
-    { name: 'Shirts', revenue: 168200, percentage: 34.7, color: 'bg-primary' },
-    { name: 'Trousers', revenue: 142800, percentage: 29.5, color: 'bg-amber-500' },
-    { name: 'Denim', revenue: 89400, percentage: 18.5, color: 'bg-sky-500' },
-    { name: 'Jackets', revenue: 56200, percentage: 11.6, color: 'bg-emerald-500' },
-    { name: 'Knits', revenue: 27600, percentage: 5.7, color: 'bg-purple-500' },
+    { name: 'Shirts', revenue: 168200, percentage: 34.7, color: 'bg-primary', hex: '#6366f1' },
+    { name: 'Trousers', revenue: 142800, percentage: 29.5, color: 'bg-amber-500', hex: '#f59e0b' },
+    { name: 'Denim', revenue: 89400, percentage: 18.5, color: 'bg-sky-500', hex: '#0ea5e9' },
+    { name: 'Jackets', revenue: 56200, percentage: 11.6, color: 'bg-emerald-500', hex: '#10b981' },
+    { name: 'Knits', revenue: 27600, percentage: 5.7, color: 'bg-purple-500', hex: '#a855f7' },
   ];
 
   const handleLaunchClearance = () => {
@@ -179,8 +229,8 @@ export const AnalyticsView: React.FC<AnalyticsViewProps> = ({ onSelectView }) =>
       {/* CHARTS & CATEGORY BREAKDOWN GRID */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         
-        {/* LEFT (7 cols): Revenue Trend Chart */}
-        <div className="lg:col-span-7 bg-card border border-border rounded-3xl p-6 shadow-xl space-y-6">
+        {/* LEFT (7 cols): Recharts Revenue & Walk-In Trend Chart */}
+        <div className="lg:col-span-7 bg-card border border-border rounded-3xl p-6 shadow-xl space-y-4">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-border/60 pb-3 gap-2">
             <div>
               <h3 className="text-base font-extrabold text-foreground">Revenue & Walk-In Traffic</h3>
@@ -199,64 +249,79 @@ export const AnalyticsView: React.FC<AnalyticsViewProps> = ({ onSelectView }) =>
             </div>
           </div>
 
-          <div className="h-56 flex items-stretch justify-between gap-3 pt-6 px-2 border-b border-border pb-3">
-            {weeklyData.map((d) => {
-              const maxWalkins = Math.max(...weeklyData.map(w => w.walkins));
-              const revPercent = Math.max(Math.round((d.revenue / maxRevenue) * 100), 4);
-              const walkinPercent = Math.max(Math.round((d.walkins / maxWalkins) * 100), 4);
-              const conversion = Math.round((d.buyers / d.walkins) * 100);
-
-              return (
-                <div key={d.day} className="flex-1 flex flex-col justify-end items-center gap-2 group relative h-full">
-                  {/* Tooltip on hover */}
-                  <div className="absolute -top-12 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 bg-popover text-popover-foreground border border-border px-3 py-1.5 rounded-xl text-xs font-mono font-bold whitespace-nowrap shadow-xl transition-all duration-200 pointer-events-none z-30 flex flex-col items-center gap-0.5">
-                    <span className="text-primary font-extrabold">₹{d.revenue.toLocaleString('en-IN')}</span>
-                    <span className="text-[10px] text-muted-foreground font-normal">
-                      {d.walkins} walk-ins • {d.buyers} buyers ({conversion}% conv.)
-                    </span>
-                  </div>
-
-                  {/* Dual Bar Track Container */}
-                  <div className="w-full flex-1 flex items-end justify-center gap-1.5 relative px-1">
-                    {/* Revenue Bar */}
-                    <div
-                      className="flex-1 bg-gradient-to-t from-primary/75 via-primary/90 to-primary group-hover:brightness-110 rounded-t-lg transition-all duration-300 relative shadow-xs"
-                      style={{ height: `${revPercent}%` }}
-                    />
-                    {/* Walk-in Bar */}
-                    <div
-                      className="flex-1 bg-gradient-to-t from-sky-600/70 via-sky-500/90 to-sky-400 group-hover:brightness-110 rounded-t-lg transition-all duration-300 relative shadow-xs"
-                      style={{ height: `${walkinPercent}%` }}
-                    />
-                  </div>
-
-                  {/* Day Label */}
-                  <span className="text-xs font-mono text-muted-foreground font-bold group-hover:text-foreground transition-colors">
-                    {d.day}
-                  </span>
-                </div>
-              );
-            })}
+          <div className="h-64 w-full pt-2">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={weeklyData} margin={{ top: 10, right: 10, left: -15, bottom: 0 }}>
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border)" opacity={0.5} />
+                <XAxis
+                  dataKey="day"
+                  axisLine={false}
+                  tickLine={false}
+                  tick={{ fill: 'var(--muted-foreground)', fontSize: 12, fontWeight: 700, fontFamily: 'monospace' }}
+                />
+                <YAxis
+                  yAxisId="left"
+                  axisLine={false}
+                  tickLine={false}
+                  tickFormatter={(v) => `₹${v / 1000}k`}
+                  tick={{ fill: 'var(--muted-foreground)', fontSize: 11, fontFamily: 'monospace' }}
+                />
+                <YAxis
+                  yAxisId="right"
+                  orientation="right"
+                  axisLine={false}
+                  tickLine={false}
+                  tickFormatter={(v) => `${v}`}
+                  tick={{ fill: 'var(--muted-foreground)', fontSize: 11, fontFamily: 'monospace' }}
+                />
+                <Tooltip content={<RechartsCustomTooltip />} />
+                <Bar yAxisId="left" dataKey="revenue" fill="var(--primary)" radius={[6, 6, 0, 0]} maxBarSize={22} name="Revenue (₹)" />
+                <Bar yAxisId="right" dataKey="walkins" fill="#0ea5e9" radius={[6, 6, 0, 0]} maxBarSize={22} name="Walk-Ins" />
+              </BarChart>
+            </ResponsiveContainer>
           </div>
         </div>
 
-        {/* RIGHT (5 cols): Category Revenue Share */}
-        <div className="lg:col-span-5 bg-card border border-border rounded-3xl p-6 shadow-xl space-y-5">
+        {/* RIGHT (5 cols): Recharts Category Donut & Sales Share */}
+        <div className="lg:col-span-5 bg-card border border-border rounded-3xl p-6 shadow-xl space-y-4">
           <div className="border-b border-border/60 pb-3">
             <h3 className="text-base font-extrabold text-foreground">Category Revenue Share</h3>
             <p className="text-xs text-muted-foreground">Sales breakdown by garment type</p>
           </div>
 
-          <div className="space-y-3">
+          <div className="h-44 w-full relative flex items-center justify-center">
+            <ResponsiveContainer width="100%" height="100%">
+              <PieChart>
+                <Pie
+                  data={categoryBreakdown}
+                  cx="50%"
+                  cy="50%"
+                  innerRadius={45}
+                  outerRadius={70}
+                  paddingAngle={4}
+                  dataKey="revenue"
+                >
+                  {categoryBreakdown.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={entry.hex} stroke="var(--card)" strokeWidth={2} />
+                  ))}
+                </Pie>
+                <Tooltip content={<CategoryCustomTooltip />} />
+              </PieChart>
+            </ResponsiveContainer>
+            <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+              <span className="text-[10px] uppercase font-bold text-muted-foreground">Total Billed</span>
+              <span className="text-xs font-mono font-extrabold text-foreground">₹4.87L</span>
+            </div>
+          </div>
+
+          <div className="space-y-2 pt-1 border-t border-border/60">
             {categoryBreakdown.map((cat) => (
-              <div key={cat.name} className="space-y-1">
-                <div className="flex justify-between text-xs font-semibold">
+              <div key={cat.name} className="flex items-center justify-between text-xs font-semibold">
+                <div className="flex items-center gap-2">
+                  <span className="w-2.5 h-2.5 rounded-full inline-block" style={{ backgroundColor: cat.hex }} />
                   <span className="text-foreground">{cat.name}</span>
-                  <span className="font-mono text-muted-foreground">₹{cat.revenue.toLocaleString('en-IN')} ({cat.percentage}%)</span>
                 </div>
-                <div className="w-full h-2 bg-muted rounded-full overflow-hidden">
-                  <div className={`h-full ${cat.color}`} style={{ width: `${cat.percentage}%` }} />
-                </div>
+                <span className="font-mono text-muted-foreground">₹{cat.revenue.toLocaleString('en-IN')} ({cat.percentage}%)</span>
               </div>
             ))}
           </div>
