@@ -6,6 +6,7 @@ import { WhatsAppReceiptModal } from './components/WhatsAppReceiptModal';
 import { LandingView } from './views/LandingView';
 import { POSView } from './views/POSView';
 import { AnalyticsView } from './views/AnalyticsView';
+import { InventoryView } from './views/InventoryView';
 import { CustomersView } from './views/CustomersView';
 import { CampaignView } from './views/CampaignView';
 
@@ -33,7 +34,7 @@ import {
 // Helper to determine initial view mode and auth status from URL pathname
 function getInitialRoute(): { isAuthenticated: boolean; currentView: ViewMode } {
   const path = window.location.pathname.replace(/^\//, '').toLowerCase();
-  const validDashboardViews: ViewMode[] = ['pos', 'analytics', 'customers', 'campaign'];
+  const validDashboardViews: ViewMode[] = ['pos', 'analytics', 'inventory', 'customers', 'campaign'];
   
   if (validDashboardViews.includes(path as ViewMode)) {
     return { isAuthenticated: true, currentView: path as ViewMode };
@@ -75,11 +76,29 @@ export function App() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState<boolean>(false);
   
   // Data State
-  const [products] = useState<Product[]>(INITIAL_PRODUCTS);
+  const [products, setProducts] = useState<Product[]>(INITIAL_PRODUCTS);
   const [customers, setCustomers] = useState<Customer[]>(INITIAL_CUSTOMERS);
   const [deadStockItems] = useState<DeadStockItem[]>(INITIAL_DEAD_STOCK);
   const [customTiers, setCustomTiers] = useState<CustomTierConfig[]>(INITIAL_CUSTOM_TIERS);
   const [broadcastLogs, setBroadcastLogs] = useState<BroadcastLog[]>(INITIAL_BROADCAST_LOGS);
+
+  const handleAddProduct = (newProduct: Product) => {
+    setProducts((prev) => [newProduct, ...prev]);
+  };
+
+  const handleUpdateStock = (productId: string, variantId: string, stockDelta: number) => {
+    setProducts((prev) =>
+      prev.map((p) => {
+        if (p.id !== productId) return p;
+        return {
+          ...p,
+          variants: p.variants.map((v) =>
+            v.id === variantId ? { ...v, stock: Math.max(0, v.stock + stockDelta) } : v
+          )
+        };
+      })
+    );
+  };
 
   const handleSendCampaign = (_cohortId: string, log: BroadcastLog) => {
     setBroadcastLogs((prev) => [log, ...prev]);
@@ -272,6 +291,14 @@ export function App() {
             deadStockItems={deadStockItems}
             onTriggerClearance={handleTriggerClearance}
             onSelectView={(v) => navigateTo(v, true)}
+          />
+        );
+      case 'inventory':
+        return (
+          <InventoryView
+            products={products}
+            onAddProduct={handleAddProduct}
+            onUpdateStock={handleUpdateStock}
           />
         );
       case 'customers':

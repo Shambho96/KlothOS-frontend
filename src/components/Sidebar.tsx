@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { 
   ShoppingBag, 
   BarChart3, 
+  Boxes,
   Users, 
   ChevronLeft,
   ChevronRight,
@@ -36,6 +37,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   const navItems: { id: ViewMode; label: string; icon: React.FC<{ className?: string }>; badge?: string }[] = [
     { id: 'pos', label: 'Fast Billing', icon: ShoppingBag, badge: 'FAST' },
     { id: 'analytics', label: 'Store Intelligence', icon: BarChart3 },
+    { id: 'inventory', label: 'Add & Manage Inventory', icon: Boxes },
     { id: 'customers', label: 'Customers', icon: Users },
     { id: 'campaign', label: 'Campaign', icon: Megaphone, badge: 'NEW' }
   ];

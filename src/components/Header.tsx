@@ -23,6 +23,7 @@ export const Header: React.FC<HeaderProps> = ({
   const viewTitles: Record<string, string> = {
     pos: 'Apparel POS Register & Fast Billing',
     analytics: 'Store Intelligence & Size Matrix Radar',
+    inventory: 'Garment Stock Manager & Add Inventory',
     customers: 'VIP Customer CRM & Rewards Directory',
     campaign: 'WhatsApp Campaign Studio & Broadcasts'
   };

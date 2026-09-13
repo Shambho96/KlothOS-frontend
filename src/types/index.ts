@@ -2,6 +2,7 @@ export type ViewMode =
   | 'landing' 
   | 'pos' 
   | 'analytics' 
+  | 'inventory'
   | 'customers'
   | 'campaign';
 
