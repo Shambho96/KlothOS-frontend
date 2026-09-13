@@ -25,7 +25,8 @@ export const Header: React.FC<HeaderProps> = ({
     analytics: 'Store Intelligence & Size Matrix Radar',
     inventory: 'Garment Stock Manager & Add Inventory',
     customers: 'VIP Customer CRM & Rewards Directory',
-    campaign: 'WhatsApp Campaign Studio & Broadcasts'
+    campaign: 'WhatsApp Campaign Studio & Broadcasts',
+    settings: 'Super Admin Settings & Staff Role Access Control'
   };
 
   const OUTLETS = [

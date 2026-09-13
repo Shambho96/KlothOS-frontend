@@ -8,7 +8,8 @@ import {
   ChevronRight,
   Store,
   LogOut,
-  Megaphone
+  Megaphone,
+  Settings
 } from 'lucide-react';
 import type { ViewMode } from '../types';
 import { KlothOSLogo } from './KlothOSLogo';
@@ -39,7 +40,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
     { id: 'analytics', label: 'Store Intelligence', icon: BarChart3 },
     { id: 'inventory', label: 'Add & Manage Inventory', icon: Boxes },
     { id: 'customers', label: 'Customers', icon: Users },
-    { id: 'campaign', label: 'Campaign', icon: Megaphone, badge: 'NEW' }
+    { id: 'campaign', label: 'Campaign', icon: Megaphone, badge: 'NEW' },
+    { id: 'settings', label: 'Settings & Staff Access', icon: Settings }
   ];
 
   return (

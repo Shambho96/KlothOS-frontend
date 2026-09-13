@@ -9,6 +9,7 @@ import { AnalyticsView } from './views/AnalyticsView';
 import { InventoryView } from './views/InventoryView';
 import { CustomersView } from './views/CustomersView';
 import { CampaignView } from './views/CampaignView';
+import { SettingsView } from './views/SettingsView';
 
 import type { 
   ViewMode, 
@@ -19,7 +20,10 @@ import type {
   Invoice, 
   DeadStockItem,
   CustomTierConfig,
-  BroadcastLog
+  BroadcastLog,
+  StaffMember,
+  AuditLogEntry,
+  StoreSettings
 } from './types';
 
 import { 
@@ -28,13 +32,16 @@ import {
   INITIAL_DEAD_STOCK,
   INITIAL_CUSTOM_TIERS,
   INITIAL_COHORTS,
-  INITIAL_BROADCAST_LOGS
+  INITIAL_BROADCAST_LOGS,
+  INITIAL_STAFF_MEMBERS,
+  INITIAL_AUDIT_LOGS,
+  DEFAULT_STORE_SETTINGS
 } from './data/mockData';
 
 // Helper to determine initial view mode and auth status from URL pathname
 function getInitialRoute(): { isAuthenticated: boolean; currentView: ViewMode } {
   const path = window.location.pathname.replace(/^\//, '').toLowerCase();
-  const validDashboardViews: ViewMode[] = ['pos', 'analytics', 'inventory', 'customers', 'campaign'];
+  const validDashboardViews: ViewMode[] = ['pos', 'analytics', 'inventory', 'customers', 'campaign', 'settings'];
   
   if (validDashboardViews.includes(path as ViewMode)) {
     return { isAuthenticated: true, currentView: path as ViewMode };
@@ -81,6 +88,68 @@ export function App() {
   const [deadStockItems] = useState<DeadStockItem[]>(INITIAL_DEAD_STOCK);
   const [customTiers, setCustomTiers] = useState<CustomTierConfig[]>(INITIAL_CUSTOM_TIERS);
   const [broadcastLogs, setBroadcastLogs] = useState<BroadcastLog[]>(INITIAL_BROADCAST_LOGS);
+  const [staffMembers, setStaffMembers] = useState<StaffMember[]>(INITIAL_STAFF_MEMBERS);
+  const [auditLogs, setAuditLogs] = useState<AuditLogEntry[]>(INITIAL_AUDIT_LOGS);
+  const [storeSettings, setStoreSettings] = useState<StoreSettings>(DEFAULT_STORE_SETTINGS);
+
+  const handleAddStaffMember = (member: StaffMember) => {
+    setStaffMembers((prev) => [member, ...prev]);
+    const newAudit: AuditLogEntry = {
+      id: `audit-${Date.now()}`,
+      timestamp: new Date().toISOString().replace('T', ' ').substring(0, 19),
+      actorName: 'Vikramaditya Sharma (Super Admin)',
+      actorRole: 'super_admin',
+      action: `Added new staff member: ${member.name} (${member.role})`,
+      category: 'staff',
+      ipAddress: '103.21.124.89'
+    };
+    setAuditLogs((prev) => [newAudit, ...prev]);
+  };
+
+  const handleUpdateStaffMember = (updatedMember: StaffMember) => {
+    setStaffMembers((prev) => prev.map((m) => m.id === updatedMember.id ? updatedMember : m));
+    const newAudit: AuditLogEntry = {
+      id: `audit-${Date.now()}`,
+      timestamp: new Date().toISOString().replace('T', ' ').substring(0, 19),
+      actorName: 'Vikramaditya Sharma (Super Admin)',
+      actorRole: 'super_admin',
+      action: `Updated access details for: ${updatedMember.name}`,
+      category: 'permission',
+      ipAddress: '103.21.124.89'
+    };
+    setAuditLogs((prev) => [newAudit, ...prev]);
+  };
+
+  const handleDeleteStaffMember = (staffId: string) => {
+    const member = staffMembers.find((m) => m.id === staffId);
+    setStaffMembers((prev) => prev.filter((m) => m.id !== staffId));
+    if (member) {
+      const newAudit: AuditLogEntry = {
+        id: `audit-${Date.now()}`,
+        timestamp: new Date().toISOString().replace('T', ' ').substring(0, 19),
+        actorName: 'Vikramaditya Sharma (Super Admin)',
+        actorRole: 'super_admin',
+        action: `Revoked access & deleted staff member: ${member.name}`,
+        category: 'security',
+        ipAddress: '103.21.124.89'
+      };
+      setAuditLogs((prev) => [newAudit, ...prev]);
+    }
+  };
+
+  const handleUpdateStoreSettings = (newSettings: StoreSettings) => {
+    setStoreSettings(newSettings);
+    const newAudit: AuditLogEntry = {
+      id: `audit-${Date.now()}`,
+      timestamp: new Date().toISOString().replace('T', ' ').substring(0, 19),
+      actorName: 'Vikramaditya Sharma (Super Admin)',
+      actorRole: 'super_admin',
+      action: `Updated Store Profile & GSTIN details (${newSettings.storeName})`,
+      category: 'settings',
+      ipAddress: '103.21.124.89'
+    };
+    setAuditLogs((prev) => [newAudit, ...prev]);
+  };
 
   const handleAddProduct = (newProduct: Product) => {
     setProducts((prev) => [newProduct, ...prev]);
@@ -329,6 +398,18 @@ export function App() {
             customers={customers}
             broadcastLogs={broadcastLogs}
             onSendCampaign={handleSendCampaign}
+          />
+        );
+      case 'settings':
+        return (
+          <SettingsView
+            staffMembers={staffMembers}
+            auditLogs={auditLogs}
+            storeSettings={storeSettings}
+            onAddStaffMember={handleAddStaffMember}
+            onUpdateStaffMember={handleUpdateStaffMember}
+            onDeleteStaffMember={handleDeleteStaffMember}
+            onUpdateStoreSettings={handleUpdateStoreSettings}
           />
         );
       default:

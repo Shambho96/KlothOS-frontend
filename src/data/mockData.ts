@@ -1,4 +1,4 @@
-import type { Product, Customer, DeadStockItem, LoyaltyRules, CampaignCohort, StoreSettings, CustomTierConfig, BroadcastLog } from '../types';
+import type { Product, Customer, DeadStockItem, LoyaltyRules, CampaignCohort, StoreSettings, CustomTierConfig, BroadcastLog, StaffMember, AuditLogEntry } from '../types';
 
 export const INITIAL_PRODUCTS: Product[] = [
   {
@@ -556,3 +556,170 @@ export const INITIAL_BROADCAST_LOGS: BroadcastLog[] = [
     revenueAttributed: 0
   }
 ];
+
+export const INITIAL_STAFF_MEMBERS: StaffMember[] = [
+  {
+    id: 'staff-1',
+    name: 'Vikramaditya Sharma',
+    email: 'vikram@klothos.io',
+    phone: '+91 98765 43210',
+    role: 'super_admin',
+    outlets: ['All Outlets'],
+    status: 'active',
+    pinCode: '9988',
+    lastActive: 'Just now',
+    permissions: {
+      pos: true,
+      analytics: true,
+      customers: true,
+      campaign: true,
+      campaigns: true,
+      settings: true,
+      inventoryManage: true,
+      refundsApprove: true,
+      exportData: true
+    }
+  },
+  {
+    id: 'staff-2',
+    name: 'Priya Sundaram',
+    email: 'priya.s@klothos.io',
+    phone: '+91 98221 11009',
+    role: 'store_manager',
+    outlets: ['Connaught Place Flagship'],
+    status: 'active',
+    pinCode: '4412',
+    lastActive: '12 mins ago',
+    permissions: {
+      pos: true,
+      analytics: true,
+      customers: true,
+      campaign: true,
+      campaigns: true,
+      settings: false,
+      inventoryManage: true,
+      refundsApprove: true,
+      exportData: true
+    }
+  },
+  {
+    id: 'staff-3',
+    name: 'Aarav Mehta',
+    email: 'aarav.m@klothos.io',
+    phone: '+91 97110 55432',
+    role: 'pos_cashier',
+    outlets: ['Connaught Place Flagship'],
+    status: 'active',
+    pinCode: '1234',
+    lastActive: '1 hour ago',
+    permissions: {
+      pos: true,
+      analytics: false,
+      customers: true,
+      campaign: false,
+      campaigns: false,
+      settings: false,
+      inventoryManage: false,
+      refundsApprove: false,
+      exportData: false
+    }
+  },
+  {
+    id: 'staff-4',
+    name: 'Ananya Deshmukh',
+    email: 'ananya.d@klothos.io',
+    phone: '+91 99008 88765',
+    role: 'inventory_clerk',
+    outlets: ['Indiranagar Boutique', 'Connaught Place Flagship'],
+    status: 'active',
+    pinCode: '7766',
+    lastActive: '3 hours ago',
+    permissions: {
+      pos: true,
+      analytics: false,
+      customers: false,
+      campaign: false,
+      campaigns: false,
+      settings: false,
+      inventoryManage: true,
+      refundsApprove: false,
+      exportData: false
+    }
+  },
+  {
+    id: 'staff-5',
+    name: 'Rohan Malhotra',
+    email: 'rohan.m@klothos.io',
+    phone: '+91 98199 33211',
+    role: 'marketing_lead',
+    outlets: ['All Outlets'],
+    status: 'inactive',
+    pinCode: '5544',
+    lastActive: '4 days ago',
+    permissions: {
+      pos: false,
+      analytics: true,
+      customers: true,
+      campaign: true,
+      campaigns: true,
+      settings: false,
+      inventoryManage: false,
+      refundsApprove: false,
+      exportData: true
+    }
+  }
+];
+
+export const INITIAL_AUDIT_LOGS: AuditLogEntry[] = [
+  {
+    id: 'audit-001',
+    timestamp: '2026-09-13 21:40:12',
+    actorName: 'Vikramaditya Sharma',
+    actorRole: 'super_admin',
+    action: 'Updated POS Permission for Priya Sundaram',
+    category: 'permission',
+    ipAddress: '103.21.124.89'
+  },
+  {
+    id: 'audit-002',
+    timestamp: '2026-09-13 20:15:44',
+    actorName: 'Priya Sundaram',
+    actorRole: 'store_manager',
+    action: 'Approved Refund of ₹4,499 (Inv #KL-8891)',
+    category: 'security',
+    ipAddress: '122.160.42.11'
+  },
+  {
+    id: 'audit-003',
+    timestamp: '2026-09-13 18:02:10',
+    actorName: 'Vikramaditya Sharma',
+    actorRole: 'super_admin',
+    action: 'Added new staff member Aarav Mehta (POS Cashier)',
+    category: 'staff',
+    ipAddress: '103.21.124.89'
+  },
+  {
+    id: 'audit-004',
+    timestamp: '2026-09-12 16:30:00',
+    actorName: 'Ananya Deshmukh',
+    actorRole: 'inventory_clerk',
+    action: 'Stock Audit completed for Indiranagar Branch',
+    category: 'settings',
+    ipAddress: '115.240.88.5'
+  }
+];
+
+export const DEFAULT_STORE_SETTINGS: StoreSettings = {
+  storeName: 'KlothOS Menswear Flagship',
+  gstin: '07AAAAA0000A1Z5',
+  supportEmail: 'contact@klothos.io',
+  supportPhone: '+91 11 4988 7000',
+  receiptHeader: 'KlothOS Menswear • Premium Apparel & Tailoring',
+  receiptFooter: 'Thank you for shopping with KlothOS. Returns accepted within 14 days with original bill.',
+  outlets: [
+    { id: 'out-1', name: 'Connaught Place Flagship', code: 'DEL-CP-01', address: 'Block C, Inner Circle, CP, New Delhi 110001', isPrimary: true },
+    { id: 'out-2', name: 'Indiranagar Boutique', code: 'BLR-IND-02', address: '100ft Road, Indiranagar, Bengaluru 560038', isPrimary: false },
+    { id: 'out-3', name: 'Bandra West Lounge', code: 'MUM-BND-03', address: 'Linking Road, Bandra West, Mumbai 400050', isPrimary: false }
+  ]
+};
+

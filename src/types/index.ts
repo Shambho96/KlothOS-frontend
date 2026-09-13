@@ -4,7 +4,93 @@ export type ViewMode =
   | 'analytics' 
   | 'inventory'
   | 'customers'
-  | 'campaign';
+  | 'campaign'
+  | 'settings';
+
+export type StaffRole = 
+  | 'Super Admin' 
+  | 'Store Manager' 
+  | 'Inventory Lead' 
+  | 'Cashier' 
+  | 'Marketing Lead'
+  | 'super_admin' 
+  | 'store_manager' 
+  | 'pos_cashier' 
+  | 'inventory_clerk' 
+  | 'marketing_lead';
+
+export interface DashboardPermissions {
+  pos: boolean;
+  analytics: boolean;
+  customers: boolean;
+  campaign: boolean;
+  campaigns?: boolean;
+  settings: boolean;
+  inventoryManage?: boolean;
+  refundsApprove?: boolean;
+  exportData?: boolean;
+}
+
+export interface StaffMember {
+  id: string;
+  name: string;
+  email: string;
+  phone: string;
+  role: StaffRole;
+  outletAssigned?: string;
+  outlets?: string[];
+  pinCode: string;
+  avatarUrl?: string;
+  status: 'Active' | 'Inactive' | 'active' | 'inactive';
+  lastActive: string;
+  permissions: DashboardPermissions;
+}
+
+export interface RolePermissionsConfig {
+  roleName: StaffRole;
+  description: string;
+  badgeStyle: string;
+  defaultPermissions: DashboardPermissions;
+}
+
+export interface AuditLogEntry {
+  id: string;
+  timestamp: string;
+  staffName?: string;
+  actorName?: string;
+  staffRole?: StaffRole;
+  actorRole?: StaffRole;
+  action: string;
+  module?: string;
+  category?: string;
+  ipAddress: string;
+}
+
+export interface OutletInfo {
+  id: string;
+  name: string;
+  code: string;
+  address: string;
+  isPrimary: boolean;
+}
+
+export interface StoreSettings {
+  storeName?: string;
+  storeLegalName?: string;
+  brandName?: string;
+  gstin: string;
+  address?: string;
+  city?: string;
+  phone?: string;
+  supportEmail?: string;
+  supportPhone?: string;
+  receiptHeader?: string;
+  receiptFooter?: string;
+  receiptFooterNote?: string;
+  metaApiStatus?: 'Live & Verified' | 'Pending' | 'Disconnected';
+  autoSendWhatsapp?: boolean;
+  outlets?: OutletInfo[];
+}
 
 export type CustomerTier = 'Silver' | 'Gold' | 'Black VIP' | string;
 
@@ -161,14 +247,3 @@ export interface BroadcastLog {
   revenueAttributed: number;
 }
 
-export interface StoreSettings {
-  storeLegalName: string;
-  brandName: string;
-  gstin: string;
-  address: string;
-  city: string;
-  phone: string;
-  metaApiStatus: 'Live & Verified' | 'Pending' | 'Disconnected';
-  receiptFooterNote: string;
-  autoSendWhatsapp: boolean;
-}
